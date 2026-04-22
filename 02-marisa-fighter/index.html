@@ -183,7 +183,10 @@
     C + crossfade <small>baseline</small>
   </button>
   <button class="variant" data-variant="D_rig">
-    D · 骨骼 rig <small>1 image → 12 parts → bones</small>
+    D · 骨骼 rig <small>cut from whole image</small>
+  </button>
+  <button class="variant" data-variant="E_rig">
+    E · 部件直接生成 <small>gpt-image-2 → 9 clean parts</small>
   </button>
 </div>
 
@@ -566,6 +569,39 @@ async function loadKnightRig() {
   return knightRig;
 }
 
+// E variant: parts generated DIRECTLY by gpt-image-2 as an asset sheet.
+// Many bones share one sprite (back limbs reuse front limb sprites).
+let knightRigE = null;
+async function loadKnightRigE() {
+  if (knightRigE) return knightRigE;
+  const skelData = await fetch('experiments/E_part_gen/skeleton_e.json').then(r => r.json());
+  // Load unique sprite files once, reuse per-bone by 'sprite' field
+  const spriteNames = [...new Set(skelData.skeleton.filter(b => b.sprite).map(b => b.sprite))];
+  const spriteImgs = {};
+  await Promise.all(spriteNames.map(async n => {
+    spriteImgs[n] = await loadImg(`experiments/E_part_gen/parts_e1/${n}.png`);
+  }));
+  // Build a sprites map keyed by BONE name (each bone may reuse a sprite)
+  const boneSprites = {};
+  for (const bone of skelData.skeleton) {
+    if (bone.sprite) boneSprites[bone.name] = spriteImgs[bone.sprite];
+  }
+  knightRigE = new PuppetRig(
+    { skeleton: skelData.skeleton, pelvis_anchor: [0, 0] },
+    boneSprites,
+    {
+      walk: KNIGHT_WALK,
+      idle: KNIGHT_IDLE,
+      attack: KNIGHT_ATTACK,
+      jump_ascend: KNIGHT_JUMP_ASCEND,
+      jump_fall: KNIGHT_JUMP_FALL,
+      jump_land: KNIGHT_JUMP_LAND,
+      hurt: KNIGHT_HURT,
+    },
+  );
+  return knightRigE;
+}
+
 // --- State ---
 const GAME_W = 1920, GAME_H = 1080;
 const GROUND_Y = 900;
@@ -752,8 +788,10 @@ function drawDummy() {
 
 function drawMarisa() {
   // Rig variant renders via PuppetRig, not the flat-sprite path.
-  if (currentVariant === 'D_rig' && knightRig) {
-    // Map game state to rig animation name
+  const rig = (currentVariant === 'D_rig') ? knightRig
+            : (currentVariant === 'E_rig') ? knightRigE
+            : null;
+  if (rig) {
     let rigAnim = 'idle';
     if (state.animName === 'walk') rigAnim = 'walk';
     else if (state.animName === 'slash' || state.animName === 'spark') rigAnim = 'attack';
@@ -761,12 +799,14 @@ function drawMarisa() {
     else if (state.animName === 'jump') rigAnim = 'jump_ascend';
     else if (state.animName === 'fall') rigAnim = 'jump_fall';
     else if (state.animName === 'land') rigAnim = 'jump_land';
-    // Local animation time (seconds since this animation started)
     const localT = (performance.now() - state.animStartTime) / 1000;
-    const SCALE = 0.65;
-    const FEET_TO_PELVIS_SCALED = 188;
+    // E rig uses a different scale because parts are pixel-art sized differently.
+    // E parts total vertical "rest pose" height is roughly torso(425) + thigh(472) + shin(349) = 1246
+    // D rig uses character total ~836. Adjust scale to match on-screen height ~540 px.
+    const SCALE = currentVariant === 'E_rig' ? 0.42 : 0.65;
+    const FEET_TO_PELVIS_SCALED = currentVariant === 'E_rig' ? 330 : 188;
     const pelvisScreenY = state.y - FEET_TO_PELVIS_SCALED;
-    knightRig.render(ctx, rigAnim, localT, {
+    rig.render(ctx, rigAnim, localT, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
     });
     return;
@@ -880,6 +920,11 @@ async function loadWalkVariant(name) {
   });
   if (name === 'D_rig') {
     await loadKnightRig();
+    state.frameIdx = 0;
+    return;
+  }
+  if (name === 'E_rig') {
+    await loadKnightRigE();
     state.frameIdx = 0;
     return;
   }

@@ -1,0 +1,201 @@
+{
+  "skeleton": [
+    {
+      "name": "pelvis",
+      "parent": null,
+      "offset": [
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        0
+      ],
+      "sprite": null,
+      "z": 2
+    },
+    {
+      "name": "torso",
+      "parent": "pelvis",
+      "offset": [
+        0,
+        0
+      ],
+      "pivot": [
+        136,
+        415
+      ],
+      "sprite": "torso",
+      "z": 3
+    },
+    {
+      "name": "head",
+      "parent": "torso",
+      "offset": [
+        0,
+        -400
+      ],
+      "pivot": [
+        228,
+        382
+      ],
+      "sprite": "head",
+      "z": 4
+    },
+    {
+      "name": "cape",
+      "parent": "torso",
+      "offset": [
+        -20,
+        -365
+      ],
+      "pivot": [
+        256,
+        10
+      ],
+      "sprite": "cape",
+      "z": 0
+    },
+    {
+      "name": "front_upper_arm",
+      "parent": "torso",
+      "offset": [
+        15,
+        -385
+      ],
+      "pivot": [
+        75,
+        10
+      ],
+      "sprite": "upper_arm",
+      "z": 6
+    },
+    {
+      "name": "front_forearm",
+      "parent": "front_upper_arm",
+      "offset": [
+        0,
+        331
+      ],
+      "pivot": [
+        107,
+        10
+      ],
+      "sprite": "forearm",
+      "z": 6
+    },
+    {
+      "name": "sword",
+      "parent": "front_forearm",
+      "offset": [
+        0,
+        422
+      ],
+      "pivot": [
+        177,
+        76
+      ],
+      "sprite": "sword",
+      "z": 6
+    },
+    {
+      "name": "back_upper_arm",
+      "parent": "torso",
+      "offset": [
+        -15,
+        -385
+      ],
+      "pivot": [
+        75,
+        10
+      ],
+      "sprite": "upper_arm",
+      "z": 1
+    },
+    {
+      "name": "back_forearm",
+      "parent": "back_upper_arm",
+      "offset": [
+        0,
+        331
+      ],
+      "pivot": [
+        107,
+        10
+      ],
+      "sprite": "forearm",
+      "z": 1
+    },
+    {
+      "name": "shield",
+      "parent": "back_forearm",
+      "offset": [
+        -10,
+        221
+      ],
+      "pivot": [
+        150,
+        256
+      ],
+      "sprite": "shield",
+      "z": 1
+    },
+    {
+      "name": "front_thigh",
+      "parent": "pelvis",
+      "offset": [
+        10,
+        0
+      ],
+      "pivot": [
+        186,
+        10
+      ],
+      "sprite": "thigh",
+      "z": 5
+    },
+    {
+      "name": "front_shin",
+      "parent": "front_thigh",
+      "offset": [
+        0,
+        452
+      ],
+      "pivot": [
+        92,
+        10
+      ],
+      "sprite": "shin",
+      "z": 5
+    },
+    {
+      "name": "back_thigh",
+      "parent": "pelvis",
+      "offset": [
+        -10,
+        0
+      ],
+      "pivot": [
+        186,
+        10
+      ],
+      "sprite": "thigh",
+      "z": 1
+    },
+    {
+      "name": "back_shin",
+      "parent": "back_thigh",
+      "offset": [
+        0,
+        452
+      ],
+      "pivot": [
+        92,
+        10
+      ],
+      "sprite": "shin",
+      "z": 1
+    }
+  ],
+  "parts_dir": "experiments/E_part_gen/parts_e1"
+}
