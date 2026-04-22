@@ -1,0 +1,11 @@
+# SECURITY: never commit API keys
+.env
+.env.*
+*.key
+openai-key.txt
+secrets/
+# build artifacts
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
