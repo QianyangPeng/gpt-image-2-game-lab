@@ -161,7 +161,7 @@
 <body>
 
 <h1>MARISA KIRISAME — FIGHTER TRAINING MODE</h1>
-<div class="subhead">gpt-image-2 depth test · 14 animation frames of the same character</div>
+<div class="subhead">gpt-image-2 depth test · 7 variants from 4 experiments · D = 1 image + bone rig</div>
 
 <div class="variants" id="variant-tabs">
   <button class="variant active" data-variant="original">
@@ -203,7 +203,8 @@
 
 <div class="controls">
   <span><kbd>A</kbd>/<kbd>←</kbd> 左走 · <kbd>D</kbd>/<kbd>→</kbd> 右走</span>
-  <span><kbd>Z</kbd> 扫帚横扫</span>
+  <span><kbd>Space</kbd> 跳（需切 D 骨骼 rig）</span>
+  <span><kbd>Z</kbd> 攻击（魔理沙=扫帚 / 骑士=斩击）</span>
   <span><kbd>X</kbd> 魔理沙炮 (Master Spark)</span>
   <span><kbd>C</kbd> 挨一下（模拟受击）</span>
   <span><kbd>R</kbd> 重置</span>
@@ -311,18 +312,27 @@ class PuppetRig {
     this.bonesByName = Object.fromEntries(this.bones.map(b => [b.name, b]));
   }
 
-  poseAt(animName, t) {
+  poseAt(animName, localT) {
     const anim = this.animations[animName];
     if (!anim) return {};
-    const phase = (t % anim.duration) / anim.duration;
+    const loop = anim.loop !== false;
     const kfs = anim.keyframes;
+    let phase;
+    if (loop) {
+      phase = (localT % anim.duration) / anim.duration;
+    } else {
+      // Non-looping: clamp to final keyframe when past duration
+      phase = Math.min(localT / anim.duration, 0.999);
+    }
     let k0, k1, t0, t1;
     for (let i = 0; i < kfs.length; i++) {
       const next = (i + 1) % kfs.length;
-      const nextT = i === kfs.length - 1 ? kfs[next].t + 1 : kfs[next].t;
+      const nextT = i === kfs.length - 1
+        ? (loop ? kfs[next].t + 1 : 1.0)
+        : kfs[next].t;
       if (phase >= kfs[i].t && phase < nextT) {
-        k0 = kfs[i]; k1 = kfs[next];
-        t0 = k0.t; t1 = nextT;
+        k0 = kfs[i]; k1 = kfs[next]; t0 = k0.t; t1 = nextT;
+        if (!loop && i === kfs.length - 1) { k1 = k0; t1 = t0 + 0.001; }
         break;
       }
     }
@@ -335,7 +345,6 @@ class PuppetRig {
       const b = k1.pose[name] ?? 0;
       pose[name] = a + (b - a) * alpha;
     }
-    // Also interpolate pelvis_dy for body bob
     pose.__pelvis_dy = (k0.pose.__pelvis_dy ?? 0) + ((k1.pose.__pelvis_dy ?? 0) - (k0.pose.__pelvis_dy ?? 0)) * alpha;
     return pose;
   }
@@ -424,11 +433,110 @@ const KNIGHT_WALK = {
 };
 
 const KNIGHT_IDLE = {
-  duration: 2.0,
+  duration: 2.0, loop: true,
   keyframes: [
     { t: 0,   pose: { __pelvis_dy: 0, torso: 0, head: 0, cape: 0 } },
     { t: 0.5, pose: { __pelvis_dy: -3, torso: 1, head: -1, cape: -3 } },
     { t: 1,   pose: { __pelvis_dy: 0, torso: 0, head: 0, cape: 0 } },
+  ],
+};
+
+// Sword slash. Non-looping. Front arm raises behind head (windup), sweeps forward
+// and down (strike), settles (recover). Torso twists, head ducks at impact.
+const KNIGHT_ATTACK = {
+  duration: 0.55, loop: false,
+  keyframes: [
+    { t: 0.0,  pose: {
+        front_upper_arm: 0,   front_forearm: 0,   sword: 0,
+        torso: 0, head: 0,
+        front_thigh: 0, front_shin: 0, back_thigh: 0, back_shin: 0,
+    }},
+    { t: 0.3,  pose: {   // windup — arm raised high
+        front_upper_arm: -115, front_forearm: -40, sword: -10,
+        torso: 6, head: -4,
+        front_thigh: -5, front_shin: 5, back_thigh: 8, back_shin: -10,
+    }},
+    { t: 0.55, pose: {   // strike — arm swept forward/down
+        front_upper_arm: 55, front_forearm: 15, sword: -40,
+        torso: -10, head: 8,
+        front_thigh: 4, front_shin: -5, back_thigh: -8, back_shin: 10,
+    }},
+    { t: 0.85, pose: {   // recovery
+        front_upper_arm: 20, front_forearm: 5, sword: -15,
+        torso: -4, head: 3,
+    }},
+    { t: 1.0,  pose: {
+        front_upper_arm: 0, front_forearm: 0, sword: 0,
+        torso: 0, head: 0,
+    }},
+  ],
+};
+
+// Jump. Four discrete phases, selected by game code (not time). So we give each
+// phase t=0 start and t=1 end so any sampling of its phase shows that pose.
+// We'll use four short loopable micro-animations.
+const KNIGHT_JUMP_ASCEND = {
+  duration: 0.25, loop: false,
+  keyframes: [
+    { t: 0,   pose: {
+        __pelvis_dy: 0,
+        front_thigh: -30, front_shin: 45, back_thigh: -25, back_shin: 40,
+        front_upper_arm: -20, front_forearm: 15, back_forearm: -8,
+        torso: -4, head: 2, cape: 12,
+    }},
+    { t: 1.0, pose: {
+        front_thigh: -30, front_shin: 45, back_thigh: -25, back_shin: 40,
+        front_upper_arm: -20, front_forearm: 15, back_forearm: -8,
+        torso: -4, head: 2, cape: 12,
+    }},
+  ],
+};
+const KNIGHT_JUMP_FALL = {
+  duration: 0.25, loop: false,
+  keyframes: [
+    { t: 0, pose: {
+        front_thigh: -10, front_shin: 25, back_thigh: -5, back_shin: 20,
+        front_upper_arm: 10, front_forearm: -5, back_forearm: 5,
+        torso: 4, head: -2, cape: -5,
+    }},
+    { t: 1, pose: {
+        front_thigh: -10, front_shin: 25, back_thigh: -5, back_shin: 20,
+        front_upper_arm: 10, front_forearm: -5, back_forearm: 5,
+        torso: 4, head: -2, cape: -5,
+    }},
+  ],
+};
+const KNIGHT_JUMP_LAND = {
+  duration: 0.25, loop: false,
+  keyframes: [
+    { t: 0,   pose: { __pelvis_dy: 12, front_thigh: 8, front_shin: -25, back_thigh: 8, back_shin: -25, torso: -6, head: 3 } },
+    { t: 0.5, pose: { __pelvis_dy: 6,  front_thigh: 4, front_shin: -10, back_thigh: 4, back_shin: -10, torso: -3, head: 1 } },
+    { t: 1,   pose: { __pelvis_dy: 0, front_thigh: 0, front_shin: 0, back_thigh: 0, back_shin: 0, torso: 0, head: 0 } },
+  ],
+};
+
+// Hurt reaction (0.45s). Head back, arms out, staggered.
+const KNIGHT_HURT = {
+  duration: 0.5, loop: false,
+  keyframes: [
+    { t: 0, pose: {
+        torso: 0, head: 0, front_upper_arm: 0, back_forearm: 0,
+    }},
+    { t: 0.25, pose: {
+        torso: 12, head: -15,
+        front_upper_arm: -30, front_forearm: -20,
+        back_forearm: 20,
+        cape: 8,
+    }},
+    { t: 0.6, pose: {
+        torso: 5, head: -5,
+        front_upper_arm: -10, front_forearm: -5,
+        back_forearm: 8,
+        cape: 3,
+    }},
+    { t: 1, pose: {
+        torso: 0, head: 0, front_upper_arm: 0, back_forearm: 0, cape: 0,
+    }},
   ],
 };
 
@@ -446,7 +554,15 @@ async function loadKnightRig() {
   await Promise.all(RIG_PART_NAMES.map(async name => {
     sprites[name] = await loadImg(`experiments/D_puppet_rig/parts/${name}.png`);
   }));
-  knightRig = new PuppetRig(skel, sprites, { walk: KNIGHT_WALK, idle: KNIGHT_IDLE });
+  knightRig = new PuppetRig(skel, sprites, {
+    walk: KNIGHT_WALK,
+    idle: KNIGHT_IDLE,
+    attack: KNIGHT_ATTACK,
+    jump_ascend: KNIGHT_JUMP_ASCEND,
+    jump_fall: KNIGHT_JUMP_FALL,
+    jump_land: KNIGHT_JUMP_LAND,
+    hurt: KNIGHT_HURT,
+  });
   return knightRig;
 }
 
@@ -455,14 +571,18 @@ const GAME_W = 1920, GAME_H = 1080;
 const GROUND_Y = 900;
 const state = {
   x: 500, y: GROUND_Y,
+  vy: 0,
+  onGround: true,
   facing: 1,
   animName: 'idle',
   frameIdx: 0,
   frameStartTime: 0,
   animStartTime: 0,
-  animLocked: false,     // true during slash/spark/hurt
+  animLocked: false,
   animEndTime: 0,
 };
+const GRAVITY = 1.1;
+const JUMP_VY = -22;
 
 const cv = document.getElementById('arena');
 const ctx = cv.getContext('2d');
@@ -485,23 +605,33 @@ function setAnim(name, lock=false) {
   state.animStartTime = performance.now();
   state.frameStartTime = state.animStartTime;
   state.animLocked = lock;
-  if (lock && ANIM[name].recovers_in) {
-    state.animEndTime = performance.now() + ANIM[name].recovers_in;
+  // Auto-lock duration: prefer ANIM[name].recovers_in; for D_rig-only anims
+  // (jump/fall/land/attack), fall back to duration from knight animations.
+  let recovers = ANIM[name]?.recovers_in;
+  if (!recovers && knightRig && knightRig.animations[name]) {
+    const loop = knightRig.animations[name].loop !== false;
+    if (!loop) recovers = knightRig.animations[name].duration * 1000;
   }
+  // Attack in D_rig should lock; pass a default recovers for 'slash' when no Marisa anim
+  if (lock && !recovers && (name === 'slash' || name === 'attack')) recovers = 550;
+  if (lock && recovers) state.animEndTime = performance.now() + recovers;
 }
 
 function updateAnim(now) {
   const anim = ANIM[state.animName];
-  // advance frames
-  const dur = anim.frameDurs ? anim.frameDurs[state.frameIdx] : (1000 / anim.fps);
-  if (now - state.frameStartTime >= dur) {
-    state.frameStartTime += dur;
-    state.frameIdx += 1;
-    if (state.frameIdx >= anim.frames.length) {
-      if (anim.loop) state.frameIdx = 0;
-      else state.frameIdx = anim.frames.length - 1;
+  if (anim) {
+    // Flat-sprite animation (Marisa): advance frame index
+    const dur = anim.frameDurs ? anim.frameDurs[state.frameIdx] : (1000 / anim.fps);
+    if (now - state.frameStartTime >= dur) {
+      state.frameStartTime += dur;
+      state.frameIdx += 1;
+      if (state.frameIdx >= anim.frames.length) {
+        if (anim.loop) state.frameIdx = 0;
+        else state.frameIdx = anim.frames.length - 1;
+      }
     }
   }
+  // D_rig animation has no frame-index concept; rig drives poses from localT continuously.
   // auto-unlock locked anims after recovery
   if (state.animLocked && now >= state.animEndTime) {
     state.animLocked = false;
@@ -511,13 +641,21 @@ function updateAnim(now) {
 
 // --- Input handling ---
 function handleInput(now) {
+  // Jump always ignores animLocked if on ground (responsive)
+  if (KEYS['Space'] && state.onGround) {
+    state.vy = JUMP_VY;
+    state.onGround = false;
+    setAnim('jump', false);
+  }
   if (state.animLocked) return;
   const left = KEYS['ArrowLeft'] || KEYS['KeyA'];
   const right = KEYS['ArrowRight'] || KEYS['KeyD'];
   if (KEYS['KeyZ']) { setAnim('slash', true); return; }
   if (KEYS['KeyX']) { setAnim('spark', true); return; }
   if (KEYS['KeyC']) { setAnim('hurt', true);  return; }
-  if (KEYS['KeyR']) { state.x = 500; setAnim('idle', false); return; }
+  if (KEYS['KeyR']) { state.x = 500; state.y = GROUND_Y; state.vy = 0; state.onGround = true; setAnim('idle', false); return; }
+  // Air state — don't override jump/fall with walk/idle while airborne
+  if (!state.onGround) return;
   if (left) {
     state.facing = -1;
     state.x = Math.max(150, state.x - 4);
@@ -528,6 +666,22 @@ function handleInput(now) {
     setAnim('walk');
   } else {
     setAnim('idle');
+  }
+}
+
+function physics(dtMs) {
+  if (!state.onGround) {
+    state.vy += GRAVITY * (dtMs / 16.67);   // gravity per 60fps-equivalent frame
+    state.y += state.vy * (dtMs / 16.67);
+    // Switch jump -> fall when velocity turns positive
+    if (state.vy > 0 && state.animName === 'jump') setAnim('fall', false);
+    if (state.y >= GROUND_Y) {
+      state.y = GROUND_Y;
+      state.vy = 0;
+      state.onGround = true;
+      setAnim('land', true);
+      state.animEndTime = performance.now() + 250;
+    }
   }
 }
 
@@ -599,22 +753,28 @@ function drawDummy() {
 function drawMarisa() {
   // Rig variant renders via PuppetRig, not the flat-sprite path.
   if (currentVariant === 'D_rig' && knightRig) {
-    const animName = (state.animName === 'walk') ? 'walk' : 'idle';
-    const t = performance.now() / 1000;
-    // Source knight character ~836 px tall. At scale 0.65, ~543 px tall on screen.
+    // Map game state to rig animation name
+    let rigAnim = 'idle';
+    if (state.animName === 'walk') rigAnim = 'walk';
+    else if (state.animName === 'slash' || state.animName === 'spark') rigAnim = 'attack';
+    else if (state.animName === 'hurt') rigAnim = 'hurt';
+    else if (state.animName === 'jump') rigAnim = 'jump_ascend';
+    else if (state.animName === 'fall') rigAnim = 'jump_fall';
+    else if (state.animName === 'land') rigAnim = 'jump_land';
+    // Local animation time (seconds since this animation started)
+    const localT = (performance.now() - state.animStartTime) / 1000;
     const SCALE = 0.65;
-    // Pelvis is the rig root. Distance from pelvis to feet in source = ~290 px
-    // (thigh 145 + shin 165 - ~20 overlap). Scaled: ~188. Place pelvis so feet land
-    // on GROUND_Y (= state.y when on ground).
     const FEET_TO_PELVIS_SCALED = 188;
     const pelvisScreenY = state.y - FEET_TO_PELVIS_SCALED;
-    knightRig.render(ctx, animName, t, {
+    knightRig.render(ctx, rigAnim, localT, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
     });
     return;
   }
 
-  const anim = ANIM[state.animName];
+  // Non-D_rig variants (Marisa sprites) don't have jump/fall/land frames -- fall back to idle
+  const animKey = ANIM[state.animName] ? state.animName : 'idle';
+  const anim = ANIM[animKey];
   const frameKey = anim.frames[Math.min(state.frameIdx, anim.frames.length - 1)];
   const img = sprites[frameKey];
   if (!img) return;
@@ -682,9 +842,13 @@ function updateHud() {
 }
 
 // --- Main loop ---
+let lastFrameTime = 0;
 function loop() {
   const now = performance.now();
+  const dtMs = lastFrameTime ? Math.min(50, now - lastFrameTime) : 16.67;
+  lastFrameTime = now;
   handleInput(now);
+  physics(dtMs);
   updateAnim(now);
   checkHit();
 

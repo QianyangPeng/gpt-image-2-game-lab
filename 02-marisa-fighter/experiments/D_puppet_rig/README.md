@@ -75,6 +75,49 @@ Fixes:
 
 After fix: face visible, feet on ground, legs cleanly attached at hip. Still not Spine-quality but the three structural problems are resolved. See commit history for the concrete diff.
 
+## v3 additions: attack + jump + hurt + SAM experiment
+
+Continuing demo 2 after the v2 fixes landed.
+
+### New animations (all driven by the same 11-part rig)
+- **Attack** (0.55s, non-looping) — sword slash: windup (arm raised to -115°, body leans +6°) → strike (arm swings to +55°, head ducks) → recovery.
+- **Jump** — keyframed poses for ascend / fall / land, driven by physics: Space sets `state.vy = -22`, gravity `1.1/frame` adds each update, `state.y += vy`. On ground collision, state transitions through a 0.25s `land` animation (crouch → stand).
+- **Hurt** (0.5s) — torso back +12°, head back -15°, front arm flails out. Auto-recovers to idle.
+- **Input**: Z → attack, Space → jump, C → hurt. Marisa variants gracefully fall back to idle for jump/fall/land states (she doesn't have those frames).
+
+This is what I meant earlier by "unlimited animations from the same 11 parts by writing more keyframe sets." These three new animations cost $0 to add.
+
+### SAM segmentation experiment
+
+Installed `segment-anything` + torch-cpu + torchvision + SAM ViT-B weights (~375MB). Wrote `sam_segment.py` with click-point prompts for each body part. Two iterations of click tuning.
+
+**Results: mixed, not used in the live game.**
+
+| Part | SAM mask quality | Score | Usable? |
+|---|---|---|---|
+| head | **pixel-perfect** (hair silhouette + ear + face as one) | 0.957 | ✅ |
+| cape | Good (flowing silhouette isolated cleanly) | 0.946 | ✅ |
+| back_forearm (shield) | Excellent (phoenix emblem isolated) | 0.987 | ✅ |
+| front_shin | Good | 0.963 | ✅ |
+| torso | Merged with adjacent arm/shield pixels | 0.857 | ⚠️ |
+| front_upper_arm | Too small / contaminated | 0.698 | ⚠️ |
+| front_thigh | Grabbed tabard + neighbor leg | 0.822 | ⚠️ |
+| **sword** | **Failed** — SAM can't isolate the thin blade from overlapping leg/tabard | 0.879 (false positive) | ❌ |
+| back_thigh | Mostly hidden behind body | 0.793 | ⚠️ |
+
+**Why SAM struggled here**:
+1. The knight source is a chibi with **tightly packed silhouettes** — thigh/tabard share color and touch, so clicks on one often mask the other.
+2. The sword blade is **thin and crosses the body** — SAM can't resolve it with positive clicks because any click near the blade gets overridden by the adjacent larger leg mask.
+3. ViT-B is the smallest SAM variant (350MB). ViT-H (2.5GB) would likely do better on these cases, at 5× inference time on CPU.
+
+**Production-ready workflow** (not done here due to time): SAM ViT-H for main masses + **color-threshold for the sword blade** (it's a distinct blue-cyan palette that hand-bbox extraction + color mask combo can isolate perfectly). Or use SpriteFlow's character-specific auto-cutter (they've trained on game sprites).
+
+**Kept in the repo**: `sam_segment.py`, `sam_to_skeleton.py`, `sam_models/sam_vit_b_01ec64.pth`, `parts_sam/`. Anyone can re-run and tune the clicks. The **live game still uses my hand-bbox parts** because the SAM ones had less-controllable failure modes.
+
+### Cost update
+All of this adds **$0** — no new gpt-image-2 calls. Just code + local ML inference + downloads.
+Running total unchanged: **$2.22 / $10 budget**.
+
 ## Known imperfections (that don't invalidate the approach)
 
 - **Hand-picked segmentation bboxes are approximate**: parts contain a little cross-contamination (the "sword" extraction actually grabbed some leg pixels because the sword overlaps with the body in the 3/4 view). Production workflow: use SAM or the commercial auto-cutters for clean part extraction, and/or regenerate the character in a strict profile T-pose with limbs spread apart so parts don't overlap.

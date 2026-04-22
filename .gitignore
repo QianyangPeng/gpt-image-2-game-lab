@@ -9,3 +9,7 @@ node_modules/
 __pycache__/
 *.pyc
 .DS_Store
+# ML model weights (too large for git; auto-downloaded by sam_segment.py)
+*.pth
+*.safetensors
+sam_models/
