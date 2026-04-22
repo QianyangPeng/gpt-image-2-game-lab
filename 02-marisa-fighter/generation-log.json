@@ -1,0 +1,268 @@
+{
+  "01_idle_front_ref": {
+    "cost": 0.21273499999999998,
+    "elapsed": 124.41155648231506,
+    "usage": {
+      "input_tokens": 403,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 403
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 7427
+    },
+    "path": "02-marisa-fighter\\frames\\01_idle_front_ref.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nMarisa Kirisame standing in a neutral idle pose, facing the viewer directly (front view). Feet together. Right arm relaxed at her side holding the broom vertically, tip of the broom touching the ground beside her right foot. Left arm relaxed at her side. Confident calm expression, slight smirk. Hat sitting straight. Braid falling neatly over her left shoulder. The full character is visible from the top of her hat to the tip of her boots, composition perfectly centered. Magenta #FF00FF background filling every pixel around her."
+  },
+  "02_idle_breath_a": {
+    "cost": 0.06268699999999999,
+    "elapsed": 54.441267251968384,
+    "usage": {
+      "input_tokens": 1387,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 363
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3143
+    },
+    "path": "02-marisa-fighter\\frames\\02_idle_breath_a.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same front-facing pose, same outfit and all details unchanged. Subtle breath animation: chest very slightly lifted, hat brim angled up 2 degrees, braid lifted a few pixels off her shoulder from a slight breeze, broom slightly tilted outward 3 degrees. Feet unchanged. Expression unchanged. Magenta #FF00FF background unchanged."
+  },
+  "03_idle_breath_b": {
+    "cost": 0.062597,
+    "elapsed": 46.85334134101868,
+    "usage": {
+      "input_tokens": 1369,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 345
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3125
+    },
+    "path": "02-marisa-fighter\\frames\\03_idle_breath_b.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same front-facing pose, same outfit. Continuing breath cycle: chest slightly lowered back down, hat brim level again, braid settling, broom returning toward vertical. One frame later than the previous reference. Magenta #FF00FF background unchanged."
+  },
+  "04_walk_1": {
+    "cost": 0.062842,
+    "elapsed": 45.35506510734558,
+    "usage": {
+      "input_tokens": 1418,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 394
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3174
+    },
+    "path": "02-marisa-fighter\\frames\\04_walk_1.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit, every detail preserved from the reference. POSE CHANGE: she now faces to the viewer's RIGHT (side view, 90 degrees). Walking stride pose 1 of 4: right leg forward fully extended with heel planted, left leg behind trailing with toe pushing off, right arm swinging backward, left arm swinging forward holding the broom like a walking staff, hat angled slightly forward with the momentum. Braid flying slightly behind her. Magenta #FF00FF background."
+  },
+  "05_walk_2": {
+    "cost": 0.062747,
+    "elapsed": 51.77354025840759,
+    "usage": {
+      "input_tokens": 1399,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 375
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3155
+    },
+    "path": "02-marisa-fighter\\frames\\05_walk_2.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same side-view (facing right), same outfit details preserved exactly. Walk stride pose 2 of 4: both legs passing close to each other mid-stride, right leg starting to lift off the ground, left leg planted flat, arms nearly vertical at her sides, broom held at an angle pointing diagonally. Braid swaying behind. Magenta #FF00FF background."
+  },
+  "06_walk_3": {
+    "cost": 0.06267199999999999,
+    "elapsed": 46.3569655418396,
+    "usage": {
+      "input_tokens": 1384,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 360
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3140
+    },
+    "path": "02-marisa-fighter\\frames\\06_walk_3.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same side-view. Walk stride pose 3 of 4: mirror of pose 1 \u2014 now LEFT leg forward extended heel planted, RIGHT leg behind trailing with toe push-off, left arm swinging back, right arm swinging forward still holding broom. Braid flying slightly back. Magenta #FF00FF background."
+  },
+  "07_walk_4": {
+    "cost": 0.06267199999999999,
+    "elapsed": 49.18134117126465,
+    "usage": {
+      "input_tokens": 1384,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 360
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3140
+    },
+    "path": "02-marisa-fighter\\frames\\07_walk_4.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same side-view. Walk stride pose 4 of 4: legs passing each other again, mirror of pose 2 \u2014 left leg just lifting off, right leg planted, nearly vertical pose. Completes the walk cycle so frame 4 \u2192 frame 1 loops smoothly. Magenta #FF00FF background."
+  },
+  "08_broom_slash_windup": {
+    "cost": 0.062762,
+    "elapsed": 52.292059659957886,
+    "usage": {
+      "input_tokens": 1402,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 378
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3158
+    },
+    "path": "02-marisa-fighter\\frames\\08_broom_slash_windup.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit details preserved. Side view facing right. ATTACK WINDUP for a broom swing: she has raised the broom above her head with both hands gripping the shaft, braced to swing downward. Legs in a wide stable stance, left foot forward, right foot back for power. Hat angled back slightly. Determined scowl. Body coiled with tension. Magenta #FF00FF background."
+  },
+  "09_broom_slash_strike": {
+    "cost": 0.062732,
+    "elapsed": 49.17068529129028,
+    "usage": {
+      "input_tokens": 1396,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 372
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3152
+    },
+    "path": "02-marisa-fighter\\frames\\09_broom_slash_strike.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit. Continuation: broom MID-SWING slicing downward horizontally in front of her at chest height, held with both hands. Arms fully extended forward. Front foot sliding forward with the momentum. Hat flying up slightly from the motion. Fierce expression. Faint motion streak behind the broom head (few small pixel dashes). Magenta #FF00FF background."
+  },
+  "10_broom_slash_recover": {
+    "cost": 0.062662,
+    "elapsed": 50.5803279876709,
+    "usage": {
+      "input_tokens": 1382,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 358
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3138
+    },
+    "path": "02-marisa-fighter\\frames\\10_broom_slash_recover.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit. Attack follow-through: broom now on the far side of the swing, tip pointing downward-forward past her feet, both arms crossed low in front of her body. Feet planted wide, recovering balance. Hat settling back onto her head. Panting expression. Magenta #FF00FF background."
+  },
+  "11_master_spark_charge": {
+    "cost": 0.062847,
+    "elapsed": 50.84982705116272,
+    "usage": {
+      "input_tokens": 1419,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 395
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3175
+    },
+    "path": "02-marisa-fighter\\frames\\11_master_spark_charge.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit. Side view facing right. MASTER SPARK CHARGE pose: she has dropped her broom and is holding the octagonal Mini-Hakkero reactor in BOTH hands, arms extended forward at shoulder height pointing right. The Hakkero is glowing intensely bright gold, energy sparks flying out around it. Legs braced wide for recoil. Hat brim pressed down against her forehead from the magical pressure. Intense focused scowl, teeth gritted. Magenta #FF00FF background."
+  },
+  "12_master_spark_fire": {
+    "cost": 0.221047,
+    "elapsed": 148.4347140789032,
+    "usage": {
+      "input_tokens": 1451,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 427
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8475
+    },
+    "path": "02-marisa-fighter\\frames\\12_master_spark_fire.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same pose, same outfit. MASTER SPARK FIRING: a massive brilliant white-gold laser beam now erupts from the Hakkero, extending far to the right off the edge of the canvas. The beam is thick (nearly half the canvas height), white-hot core surrounded by yellow-gold energy fringes and rainbow prismatic edges. Rings of magical energy expand around the Hakkero at the beam's origin. Marisa braced hard against the recoil, hair and dress whipping backward, hat ribbon streaming. Her entire left side illuminated white from the beam light. Magenta #FF00FF background (outside of the beam glow)."
+  },
+  "13_master_spark_recover": {
+    "cost": 0.062752,
+    "elapsed": 50.272135496139526,
+    "usage": {
+      "input_tokens": 1400,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 376
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3156
+    },
+    "path": "02-marisa-fighter\\frames\\13_master_spark_recover.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit. The beam has finished \u2014 only faint wisps of golden smoke drift from the Hakkero. Marisa is panting, the Hakkero lowered to her waist in her right hand, left hand on her knee for support, slight crouch, hat tilted back, hair disheveled, sweat droplets, exhausted grin of triumph. Magenta #FF00FF background."
+  },
+  "14_hurt": {
+    "cost": 0.062802,
+    "elapsed": 48.25121068954468,
+    "usage": {
+      "input_tokens": 1410,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 386
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3166
+    },
+    "path": "02-marisa-fighter\\frames\\14_hurt.png",
+    "prompt": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character \u2014 no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.\n\nSame character, same outfit. Side view facing right. HIT REACTION: she has been struck from the right side, knocked into a stagger. Body bent backward, head thrown back, hat flying up off her head, braid whipping, broom falling from her hand, arms flung out wide. Pained expression, eyes closed, mouth open in shock. Small starburst impact effects near her midsection indicating the hit. Magenta #FF00FF background."
+  }
+}

@@ -4,9 +4,10 @@ Testing **Claude Opus 4.7 + gpt-image-2 + Claude Code** as a complete game-asset
 
 ## Demos
 
-| # | Demo | Genre | Stress test | Play |
-|---|---|---|---|---|
-| 01 | [Sprout to World Tree](01-evolution-clicker/) | Incremental clicker | Identity preservation across 5 extreme transformations | [▶ Play](https://qianyangpeng.github.io/gpt-image-2-game-lab/01-evolution-clicker/) |
+| # | Demo | Genre | Stress test | Assets cost | Play |
+|---|---|---|---|---|---|
+| 01 | [Sprout to World Tree](01-evolution-clicker/) | Incremental clicker | Identity preservation across 5 extreme transformations | $0.62 | [▶ Play](https://qianyangpeng.github.io/gpt-image-2-game-lab/01-evolution-clicker/) |
+| 02 | [Marisa Kirisame — Fighter Training](02-marisa-fighter/) | 2D fighter move set | 14 animation frames of same character, outfit/identity locked | $1.19 | [▶ Play](https://qianyangpeng.github.io/gpt-image-2-game-lab/02-marisa-fighter/) |
 
 More coming.
 
