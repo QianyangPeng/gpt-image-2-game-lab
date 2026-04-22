@@ -335,8 +335,9 @@ function triggerEvolveFX() {
 
 // --- Evolve ---
 function tryEvolve() {
-  const cur = STAGES[state.stage - 1];
-  while (state.xp >= cur.threshold && state.stage < STAGES.length) {
+  while (state.stage < STAGES.length) {
+    const cur = STAGES[state.stage - 1];
+    if (state.xp < cur.threshold) break;
     state.xp -= cur.threshold;
     state.stage += 1;
     const ns = STAGES[state.stage - 1];

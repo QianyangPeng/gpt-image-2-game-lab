@@ -1,0 +1,106 @@
+{
+  "demo": "02-marisa-fighter",
+  "title": "Marisa Kirisame — 2D Fighter Moveset",
+  "description": "Testing gpt-image-2's depth limit: can it keep ONE character's identity locked across 14 full-body animation frames? Classic 2D-fighter move set for Touhou's Marisa Kirisame. Every pose shows the same character side-by-side with every other pose — any drift in face, outfit, or proportions is immediately visible.",
+  "canvas_size": "1024x1024",
+  "style_preamble": "2D pixel-art fighter sprite, Capcom-style (think Street Fighter III / Darkstalkers aesthetic), bold clean outlines, limited rich color palette with strong shading, crisp pixel art at roughly 200-pixel character height inside a 1024px canvas. Character is CENTERED in the frame, full body visible, feet at ~85% down the canvas. IMPORTANT: uniform flat bright magenta background color #FF00FF covering EVERY pixel that isn't the character — no gradient, no shadow on the floor, no vignette, no texture. Pure #FF00FF. CHARACTER IDENTITY (must be preserved exactly across all frames): Marisa Kirisame from Touhou Project. Blonde hair with a long single braid falling over her LEFT shoulder down to her waist. Black pointed witch hat with a wide white band around the base and a red ribbon tied on the front of the band. Sleeveless black witch dress with a white frilled apron tied at the waist with a large purple bow. Long black puffed sleeves with white cuffs. Black knee-high buckle boots. An octagonal brass Mini-Hakkero reactor attached to her waist (right side), faintly glowing golden. Holding a straw broom with a polished wooden shaft in her right hand. Face: large golden-yellow eyes, slightly mischievous expression, small nose, pale skin. NO TEXT, no UI, no motion lines, no watermark, no border.",
+  "frames": [
+    {
+      "name": "01_idle_front_ref",
+      "role": "reference_master",
+      "quality": "high",
+      "prompt": "Marisa Kirisame standing in a neutral idle pose, facing the viewer directly (front view). Feet together. Right arm relaxed at her side holding the broom vertically, tip of the broom touching the ground beside her right foot. Left arm relaxed at her side. Confident calm expression, slight smirk. Hat sitting straight. Braid falling neatly over her left shoulder. The full character is visible from the top of her hat to the tip of her boots, composition perfectly centered. Magenta #FF00FF background filling every pixel around her."
+    },
+    {
+      "name": "02_idle_breath_a",
+      "role": "idle_cycle_1",
+      "quality": "medium",
+      "reference": "01_idle_front_ref",
+      "prompt": "Same character, same front-facing pose, same outfit and all details unchanged. Subtle breath animation: chest very slightly lifted, hat brim angled up 2 degrees, braid lifted a few pixels off her shoulder from a slight breeze, broom slightly tilted outward 3 degrees. Feet unchanged. Expression unchanged. Magenta #FF00FF background unchanged."
+    },
+    {
+      "name": "03_idle_breath_b",
+      "role": "idle_cycle_2",
+      "quality": "medium",
+      "reference": "02_idle_breath_a",
+      "prompt": "Same character, same front-facing pose, same outfit. Continuing breath cycle: chest slightly lowered back down, hat brim level again, braid settling, broom returning toward vertical. One frame later than the previous reference. Magenta #FF00FF background unchanged."
+    },
+    {
+      "name": "04_walk_1",
+      "role": "walk_cycle_pose1",
+      "quality": "medium",
+      "reference": "01_idle_front_ref",
+      "prompt": "Same character, same outfit, every detail preserved from the reference. POSE CHANGE: she now faces to the viewer's RIGHT (side view, 90 degrees). Walking stride pose 1 of 4: right leg forward fully extended with heel planted, left leg behind trailing with toe pushing off, right arm swinging backward, left arm swinging forward holding the broom like a walking staff, hat angled slightly forward with the momentum. Braid flying slightly behind her. Magenta #FF00FF background."
+    },
+    {
+      "name": "05_walk_2",
+      "role": "walk_cycle_pose2",
+      "quality": "medium",
+      "reference": "04_walk_1",
+      "prompt": "Same character, same side-view (facing right), same outfit details preserved exactly. Walk stride pose 2 of 4: both legs passing close to each other mid-stride, right leg starting to lift off the ground, left leg planted flat, arms nearly vertical at her sides, broom held at an angle pointing diagonally. Braid swaying behind. Magenta #FF00FF background."
+    },
+    {
+      "name": "06_walk_3",
+      "role": "walk_cycle_pose3",
+      "quality": "medium",
+      "reference": "05_walk_2",
+      "prompt": "Same character, same side-view. Walk stride pose 3 of 4: mirror of pose 1 — now LEFT leg forward extended heel planted, RIGHT leg behind trailing with toe push-off, left arm swinging back, right arm swinging forward still holding broom. Braid flying slightly back. Magenta #FF00FF background."
+    },
+    {
+      "name": "07_walk_4",
+      "role": "walk_cycle_pose4",
+      "quality": "medium",
+      "reference": "06_walk_3",
+      "prompt": "Same character, same side-view. Walk stride pose 4 of 4: legs passing each other again, mirror of pose 2 — left leg just lifting off, right leg planted, nearly vertical pose. Completes the walk cycle so frame 4 → frame 1 loops smoothly. Magenta #FF00FF background."
+    },
+    {
+      "name": "08_broom_slash_windup",
+      "role": "attack_basic_1",
+      "quality": "medium",
+      "reference": "01_idle_front_ref",
+      "prompt": "Same character, same outfit details preserved. Side view facing right. ATTACK WINDUP for a broom swing: she has raised the broom above her head with both hands gripping the shaft, braced to swing downward. Legs in a wide stable stance, left foot forward, right foot back for power. Hat angled back slightly. Determined scowl. Body coiled with tension. Magenta #FF00FF background."
+    },
+    {
+      "name": "09_broom_slash_strike",
+      "role": "attack_basic_2",
+      "quality": "medium",
+      "reference": "08_broom_slash_windup",
+      "prompt": "Same character, same outfit. Continuation: broom MID-SWING slicing downward horizontally in front of her at chest height, held with both hands. Arms fully extended forward. Front foot sliding forward with the momentum. Hat flying up slightly from the motion. Fierce expression. Faint motion streak behind the broom head (few small pixel dashes). Magenta #FF00FF background."
+    },
+    {
+      "name": "10_broom_slash_recover",
+      "role": "attack_basic_3",
+      "quality": "medium",
+      "reference": "09_broom_slash_strike",
+      "prompt": "Same character, same outfit. Attack follow-through: broom now on the far side of the swing, tip pointing downward-forward past her feet, both arms crossed low in front of her body. Feet planted wide, recovering balance. Hat settling back onto her head. Panting expression. Magenta #FF00FF background."
+    },
+    {
+      "name": "11_master_spark_charge",
+      "role": "special_attack_1",
+      "quality": "medium",
+      "reference": "01_idle_front_ref",
+      "prompt": "Same character, same outfit. Side view facing right. MASTER SPARK CHARGE pose: she has dropped her broom and is holding the octagonal Mini-Hakkero reactor in BOTH hands, arms extended forward at shoulder height pointing right. The Hakkero is glowing intensely bright gold, energy sparks flying out around it. Legs braced wide for recoil. Hat brim pressed down against her forehead from the magical pressure. Intense focused scowl, teeth gritted. Magenta #FF00FF background."
+    },
+    {
+      "name": "12_master_spark_fire",
+      "role": "special_attack_2_climax",
+      "quality": "high",
+      "reference": "11_master_spark_charge",
+      "prompt": "Same character, same pose, same outfit. MASTER SPARK FIRING: a massive brilliant white-gold laser beam now erupts from the Hakkero, extending far to the right off the edge of the canvas. The beam is thick (nearly half the canvas height), white-hot core surrounded by yellow-gold energy fringes and rainbow prismatic edges. Rings of magical energy expand around the Hakkero at the beam's origin. Marisa braced hard against the recoil, hair and dress whipping backward, hat ribbon streaming. Her entire left side illuminated white from the beam light. Magenta #FF00FF background (outside of the beam glow)."
+    },
+    {
+      "name": "13_master_spark_recover",
+      "role": "special_attack_3",
+      "quality": "medium",
+      "reference": "12_master_spark_fire",
+      "prompt": "Same character, same outfit. The beam has finished — only faint wisps of golden smoke drift from the Hakkero. Marisa is panting, the Hakkero lowered to her waist in her right hand, left hand on her knee for support, slight crouch, hat tilted back, hair disheveled, sweat droplets, exhausted grin of triumph. Magenta #FF00FF background."
+    },
+    {
+      "name": "14_hurt",
+      "role": "hit_reaction",
+      "quality": "medium",
+      "reference": "01_idle_front_ref",
+      "prompt": "Same character, same outfit. Side view facing right. HIT REACTION: she has been struck from the right side, knocked into a stagger. Body bent backward, head thrown back, hat flying up off her head, braid whipping, broom falling from her hand, arms flung out wide. Pained expression, eyes closed, mouth open in shock. Small starburst impact effects near her midsection indicating the hit. Magenta #FF00FF background."
+    }
+  ]
+}
