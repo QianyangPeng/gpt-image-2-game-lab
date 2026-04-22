@@ -38,20 +38,21 @@ im.save(OUT / 'full.png')
 # pivot is in SPRITE-LOCAL coordinates (relative to the extracted sprite's top-left).
 # For a bone, pivot = attachment point to parent in THIS sprite's space.
 PARTS = {
-    # Remeasured from knight_sideview.png (1024x1024).
-    # Character bbox ~ x=186..742, y=91..927.
-    'cape':             {'bbox': (186, 270, 420, 720), 'pivot_full': (400, 300)},
-    'back_thigh':       {'bbox': (410, 615, 495, 770), 'pivot_full': (455, 620)},
-    'back_shin':        {'bbox': (415, 755, 510, 925), 'pivot_full': (460, 765)},
-    'back_upper_arm':   {'bbox': (540, 310, 620, 460), 'pivot_full': (575, 320)},
-    'back_forearm':     {'bbox': (560, 310, 745, 525), 'pivot_full': (585, 320)},  # includes shield
-    'torso':            {'bbox': (395, 305, 560, 625), 'pivot_full': (480, 620)},
-    'head':             {'bbox': (305, 91, 545, 320), 'pivot_full': (465, 310)},
-    'front_thigh':      {'bbox': (455, 615, 560, 770), 'pivot_full': (505, 620)},
-    'front_shin':       {'bbox': (460, 755, 575, 925), 'pivot_full': (510, 765)},
-    'front_upper_arm':  {'bbox': (475, 310, 565, 475), 'pivot_full': (520, 320)},
-    'front_forearm':    {'bbox': (465, 460, 575, 575), 'pivot_full': (520, 470)},
-    'sword':            {'bbox': (440, 550, 555, 925), 'pivot_full': (510, 570)},
+    # V3 — widened head to include face; tightened leg bboxes below torso bottom
+    # to eliminate tabard-pixel cross-contamination.
+    'cape':             {'bbox': (180, 260, 425, 730), 'pivot_full': (400, 290)},
+    'back_thigh':       {'bbox': (410, 635, 500, 780), 'pivot_full': (455, 640)},
+    'back_shin':        {'bbox': (415, 760, 515, 925), 'pivot_full': (465, 770)},
+    # Back arm: just the shield area (won't animate separately — stays glued to torso)
+    'back_forearm':     {'bbox': (540, 290, 750, 535), 'pivot_full': (575, 310)},
+    'torso':            {'bbox': (390, 295, 565, 640), 'pivot_full': (480, 630)},
+    'head':             {'bbox': (290, 80, 645, 330), 'pivot_full': (485, 320)},
+    'front_thigh':      {'bbox': (455, 635, 560, 780), 'pivot_full': (505, 640)},
+    'front_shin':       {'bbox': (460, 760, 580, 925), 'pivot_full': (510, 770)},
+    # Front arm: small region so rotation doesn't drag torso pixels
+    'front_upper_arm':  {'bbox': (475, 300, 560, 470), 'pivot_full': (520, 310)},
+    'front_forearm':    {'bbox': (460, 460, 580, 580), 'pivot_full': (520, 470)},
+    'sword':            {'bbox': (440, 550, 555, 925), 'pivot_full': (505, 560)},
 }
 
 
@@ -80,8 +81,7 @@ HIERARCHY = {
     'cape':            'torso',
     'back_thigh':      'pelvis',
     'back_shin':       'back_thigh',
-    'back_upper_arm':  'torso',
-    'back_forearm':    'back_upper_arm',
+    'back_forearm':    'torso',    # shield arm glued to torso, doesn't swing independently
     'torso':           'pelvis',
     'head':            'torso',
     'front_thigh':     'pelvis',
@@ -91,9 +91,8 @@ HIERARCHY = {
     'sword':           'front_forearm',
 }
 
-# pelvis is a virtual root bone — no sprite. Positioned at torso's pivot_full minus a small offset.
-# Actually use torso's bottom-center as pelvis.
-pelvis_full = (510, 640)   # midpoint between the two hips
+# Pelvis placed at hip-joint level (where thighs attach).
+pelvis_full = (510, 640)
 
 skeleton = []
 for part_name, part_meta in metadata.items():

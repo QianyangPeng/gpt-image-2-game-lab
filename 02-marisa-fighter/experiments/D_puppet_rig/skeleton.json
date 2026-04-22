@@ -19,15 +19,15 @@
       "parent": "torso",
       "offset": [
         -80,
-        -320
+        -340
       ],
       "pivot": [
-        214,
+        220,
         30
       ],
       "sprite_size": [
-        234,
-        450
+        245,
+        470
       ],
       "z": 0
     },
@@ -36,15 +36,15 @@
       "parent": "pelvis",
       "offset": [
         -55,
-        -20
+        0
       ],
       "pivot": [
         45,
         5
       ],
       "sprite_size": [
-        85,
-        155
+        90,
+        145
       ],
       "z": 1
     },
@@ -52,50 +52,33 @@
       "name": "back_shin",
       "parent": "back_thigh",
       "offset": [
-        5,
-        145
+        10,
+        130
       ],
       "pivot": [
-        45,
+        50,
         10
       ],
       "sprite_size": [
-        95,
-        170
-      ],
-      "z": 1
-    },
-    {
-      "name": "back_upper_arm",
-      "parent": "torso",
-      "offset": [
-        95,
-        -300
-      ],
-      "pivot": [
-        35,
-        10
-      ],
-      "sprite_size": [
-        80,
-        150
+        100,
+        165
       ],
       "z": 1
     },
     {
       "name": "back_forearm",
-      "parent": "back_upper_arm",
+      "parent": "torso",
       "offset": [
-        10,
-        0
+        95,
+        -320
       ],
       "pivot": [
-        25,
-        10
+        35,
+        20
       ],
       "sprite_size": [
-        185,
-        215
+        210,
+        245
       ],
       "z": 1
     },
@@ -104,15 +87,15 @@
       "parent": "pelvis",
       "offset": [
         -30,
-        -20
+        -10
       ],
       "pivot": [
-        85,
-        315
+        90,
+        335
       ],
       "sprite_size": [
-        165,
-        320
+        175,
+        345
       ],
       "z": 3
     },
@@ -120,16 +103,16 @@
       "name": "head",
       "parent": "torso",
       "offset": [
-        -15,
+        5,
         -310
       ],
       "pivot": [
-        160,
-        219
+        195,
+        240
       ],
       "sprite_size": [
-        240,
-        229
+        355,
+        250
       ],
       "z": 4
     },
@@ -138,7 +121,7 @@
       "parent": "pelvis",
       "offset": [
         -5,
-        -20
+        0
       ],
       "pivot": [
         50,
@@ -146,7 +129,7 @@
       ],
       "sprite_size": [
         105,
-        155
+        145
       ],
       "z": 5
     },
@@ -155,15 +138,15 @@
       "parent": "front_thigh",
       "offset": [
         5,
-        145
+        130
       ],
       "pivot": [
         50,
         10
       ],
       "sprite_size": [
-        115,
-        170
+        120,
+        165
       ],
       "z": 5
     },
@@ -172,15 +155,15 @@
       "parent": "torso",
       "offset": [
         40,
-        -300
+        -320
       ],
       "pivot": [
         45,
         10
       ],
       "sprite_size": [
-        90,
-        165
+        85,
+        170
       ],
       "z": 6
     },
@@ -189,15 +172,15 @@
       "parent": "front_upper_arm",
       "offset": [
         0,
-        150
+        160
       ],
       "pivot": [
-        55,
+        60,
         10
       ],
       "sprite_size": [
-        110,
-        115
+        120,
+        120
       ],
       "z": 6
     },
@@ -205,12 +188,12 @@
       "name": "sword",
       "parent": "front_forearm",
       "offset": [
-        -10,
-        100
+        -15,
+        90
       ],
       "pivot": [
-        70,
-        20
+        65,
+        10
       ],
       "sprite_size": [
         115,

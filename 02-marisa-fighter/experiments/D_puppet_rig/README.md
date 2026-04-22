@@ -61,6 +61,20 @@ Open the demo, click the **D · 骨骼 rig** tab, hold arrow keys:
 
 Total cost to build this animation: **$0.020 in gpt-image-2 tokens + a few hours of code**. The same rig could drive: run, jump, attack, cast, hurt, block, idle-variants — unlimited animations from the same 12 parts by just writing more keyframe sets.
 
+## Post-fix update (v2)
+
+User flagged two real defects after first push:
+1. **"人脸都不完整"** — Right. My initial head bbox ended at x=545, cutting off the face (which actually extends to x=643). Widened to x=290..645 and verified with a pixel-scan script that isolates skin-tone pixels.
+2. **"腿像是从脖子岔开的，不是从跨部岔开的"** — Also right. Legs were rendered floating ~150 px above the ground, making the proportions look head-heavy. Two root causes: (a) my `pelvisScreenY = state.y - 340` was a guess, not calibrated against the rigs actual thigh+shin lengths. (b) leg bboxes started at y=615, overlapping the torso bbox (y=305..625), so part of the tabard/skirt got baked into the thigh sprites and rotated with the leg swings — looking like "body parts spawning from the wrong place". 
+
+Fixes:
+- `pelvisScreenY = state.y - 188` (calibrated: thigh 145 + shin 165 scaled by 0.65 = 201, minus ~13 for the thigh's pelvis-offset).
+- Leg bboxes tightened to start at y=635 (clean of torso).
+- Head bbox widened and pivot re-computed.
+- Dropped `back_upper_arm` as a separate bone — it's invisible behind the body anyway and added noise. `back_forearm` (with shield) is now direct child of torso.
+
+After fix: face visible, feet on ground, legs cleanly attached at hip. Still not Spine-quality but the three structural problems are resolved. See commit history for the concrete diff.
+
 ## Known imperfections (that don't invalidate the approach)
 
 - **Hand-picked segmentation bboxes are approximate**: parts contain a little cross-contamination (the "sword" extraction actually grabbed some leg pixels because the sword overlaps with the body in the 3/4 view). Production workflow: use SAM or the commercial auto-cutters for clean part extraction, and/or regenerate the character in a strict profile T-pose with limbs spread apart so parts don't overlap.

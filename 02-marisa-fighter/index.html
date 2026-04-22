@@ -601,11 +601,13 @@ function drawMarisa() {
   if (currentVariant === 'D_rig' && knightRig) {
     const animName = (state.animName === 'walk') ? 'walk' : 'idle';
     const t = performance.now() / 1000;
-    // Scale so character height ~ 500px on the 1920px arena.
-    // Source knight is ~836px tall. Target 500 -> scale 0.6.
-    const SCALE = 0.7;
-    // Anchor so the pelvis lands near the feet on screen.
-    const pelvisScreenY = state.y - 340;   // raise pelvis above ground
+    // Source knight character ~836 px tall. At scale 0.65, ~543 px tall on screen.
+    const SCALE = 0.65;
+    // Pelvis is the rig root. Distance from pelvis to feet in source = ~290 px
+    // (thigh 145 + shin 165 - ~20 overlap). Scaled: ~188. Place pelvis so feet land
+    // on GROUND_Y (= state.y when on ground).
+    const FEET_TO_PELVIS_SCALED = 188;
+    const pelvisScreenY = state.y - FEET_TO_PELVIS_SCALED;
     knightRig.render(ctx, animName, t, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
     });
