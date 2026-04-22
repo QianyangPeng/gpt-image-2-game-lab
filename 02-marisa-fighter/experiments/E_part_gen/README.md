@@ -69,3 +69,71 @@ See [run_e1_sheet.py](run_e1_sheet.py).
 ## Cost update
 E experiment: **$0.0153** (one API call).
 Running total: $2.22 + $0.015 = **$2.24 / $10**. Demo 2 still cheaper than a coffee.
+
+---
+
+## v2 pipeline — auto-detect joints, normalize scales, build skeleton
+
+User's pushback after v1: "joints don't connect, head floats off, arms don't align with torso". Real problem — v1 rigged by eyeballing pivots and offsets. Let me build the actual **production-grade pipeline**:
+
+### `detect_joints.py` — find joints from pixel geometry
+For each part, locate its attachment keypoints:
+- **Vertical parts** (arm / leg / cape / shin): `top = centroid of top 15% of mask`, `bottom = centroid of bottom 15%`. X-coordinate falls back to sprite width center if the detected centroid is in outer 10% of sprite (robust against pointy tips).
+- **Torso**: `top = neck centroid`, `bottom = pelvis centroid`, plus `left_shoulder / right_shoulder = endpoints of the WIDEST row in top 25%` (that's where the pauldron stubs stick out).
+- **Sword**: `top = grip location (center of the widest row in top 30%, which is the crossguard)`.
+- **Head**: detection is unreliable (pigtail pulls centroid off to the side) — falls back to manual override.
+
+Output: `joints.json` per-part keypoints in local pixel coords.
+
+**Gotcha**: about 30% of parts needed manual override. The model sometimes puts asymmetric stubs or decorative bits that confuse naïve centroid detection. Production tools like Spine's auto-rig still have this problem — humans do final polish. The pipeline prints detected values, human edits an overrides dict, runs again.
+
+### `build_skeleton_v2.py` — auto-computed offsets + scale normalization
+Two fixes stacked:
+
+1. **Scale normalization**: target character total height = 800 px, with fixed proportions (head 20%, torso 42%, arm 20%, leg 44%, etc.). Each part's `sprite_scale` is computed as `target_height / native_height`. `PuppetRig.render()` was updated to apply `bone.sprite_scale` when drawing so different-native-size parts assemble correctly at runtime.
+
+2. **Auto-computed offsets**: offsets between bones derived from `joints.json` directly. For each parent-child pair, `offset = (parent.child_attach_point - parent.pivot)` in parent's scaled-local coords. No eyeballing.
+
+Result: E v2 rig renders with head, torso, arms, legs all roughly connecting at joints. Some slack remains due to (a) asymmetric part stubs causing ~10px pivot error and (b) generated parts have inconsistent native proportions — the scale normalization fixes *heights* but not internal details like "the pauldron extends 30 px beyond the neckline on this torso". Truly clean would need the regen prompt to enforce per-part pixel sizes (E3 experiment — not done, $0.02 if you want it).
+
+### Files in this pipeline
+| File | Purpose |
+|---|---|
+| `run_e1_sheet.py` | one API call → `asset_sheet.png` (raw 3x3 sheet) |
+| `split_sheet.py` | split + chroma-key → `parts_e1/*.png` |
+| `detect_joints.py` | auto-find joints + manual overrides → `joints.json` |
+| `build_skeleton_v2.py` | compute offsets + scales → `skeleton_e2.json` |
+| (game) `PuppetRig` class | loads skeleton, applies per-bone `sprite_scale` at draw |
+
+The whole pipeline takes ~15 seconds of compute for a fresh character after the 35-second API call.
+
+## v3: block / dash / cast + HP + hit detection
+
+Same rig now supports:
+- **Block** (hold S / ↓): `back_upper_arm` rotates forward, shield raises. Loops while held. Negates incoming damage.
+- **Dash** (Shift): 300ms invincible lunge, 60px impulse forward. 800ms cooldown.
+- **Cast** (F): raises sword overhead, holds for 0.8s.
+- **HP**: player 100, dummy 100. Slash deals 20 to dummy if in range (250 px reach, 220 px tolerance). Damage detection fires once per attack, doesn't depend on animation phase (robust against frame-rate variance).
+- **Blocking** + **invincibility frames**: `state.blocking = true` during block cancels damage. Dash gives 300ms i-frames.
+- **Game over overlay**: `win` when dummy dies, `lose` when player HP hits 0.
+
+The point: this is now a **playable micro-fighter**. Not a production game, but a demonstration that **gpt-image-2 (one asset-sheet call, $0.015) + detect-joints pipeline + ~150 lines of rig code + keyframe animations = an actually interactive game character**.
+
+## Final scorecard
+
+| Property | D (cut from whole) | E (asset sheet + v2 pipeline) |
+|---|---|---|
+| Source images | 1 × $0.02 | 1 × $0.02 |
+| Joint alignment | Eyeballed pivots, visible seams | Auto-detected + normalized, cleaner |
+| Animation count | walk / idle / attack / jump / hurt | + block / dash / cast |
+| Combat mechanics | none (animation only) | HP + hit + i-frames + block + game-over |
+| Is it a game? | demo | **playable training dummy** |
+| Repeatable on a new character? | No — D requires re-tuning hand-bboxes per character | **Yes — rerun run_e1_sheet + detect_joints + build_skeleton_v2** |
+
+## If I had another $1 to polish
+
+1. **E3 regen** with per-part pixel-size constraints in the prompt ($0.02) — "head 160px tall, torso 330px tall, upper_arm 160px tall" so proportions fit without rig-side scaling.
+2. **Simple IK** for feet (~30 lines) so walking doesn't slide.
+3. **Secondary motion** for cape + hair (spring physics, ~40 lines).
+4. **A real enemy** (not just a wobble dummy) using the same pipeline — second character.
+

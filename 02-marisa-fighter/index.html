@@ -71,6 +71,22 @@
   }
   #gallery-btn:hover { background: rgba(142,107,223,0.3); }
 
+  /* HP bars */
+  .hp-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink); }
+  .hp-label { min-width: 30px; color: var(--dim); letter-spacing: 1px; }
+  .hp-bar { width: 180px; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; }
+  .hp-fill { height: 100%; transition: width 0.2s ease; }
+  .hp-num { min-width: 24px; font-variant-numeric: tabular-nums; color: var(--gold); font-family: ui-monospace, monospace; }
+  /* Game over overlay */
+  #game-over {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.75); z-index: 5; gap: 12px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  }
+  #game-over-title { font-size: 48px; font-weight: bold; letter-spacing: 8px; color: var(--gold); }
+  #game-over .sub { font-size: 16px; color: var(--ink); }
+  #game-over.lose #game-over-title { color: #ff6868; }
+
   /* Variant tabs */
   .variants {
     display: flex; gap: 6px; margin-top: 10px; margin-bottom: 4px;
@@ -194,23 +210,38 @@
   <canvas id="arena" width="1920" height="1080"></canvas>
 
   <div id="hud">
-    <div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
       <div class="badge">状态 <b id="state-label">idle</b></div>
-      <div class="badge" style="margin-top:6px">帧 <b id="frame-label">0</b></div>
+      <div class="hp-row">
+        <span class="hp-label">骑士</span>
+        <div class="hp-bar"><div class="hp-fill" id="hp-player" style="width:100%;background:#7be06a"></div></div>
+        <span class="hp-num" id="hp-player-num">100</span>
+      </div>
+      <div class="hp-row">
+        <span class="hp-label">木桩</span>
+        <div class="hp-bar"><div class="hp-fill" id="hp-dummy" style="width:100%;background:#e06a6a"></div></div>
+        <span class="hp-num" id="hp-dummy-num">100</span>
+      </div>
     </div>
     <button id="gallery-btn">🖼 查看全部 14 帧</button>
+  </div>
+  <div id="game-over" style="display:none;">
+    <div id="game-over-title"></div>
+    <div class="sub">按 <kbd>R</kbd> 重新开始</div>
   </div>
 
   <div id="loading">LOADING SPRITES<span class="bar"><span class="fill" id="load-fill"></span></span></div>
 </div>
 
 <div class="controls">
-  <span><kbd>A</kbd>/<kbd>←</kbd> 左走 · <kbd>D</kbd>/<kbd>→</kbd> 右走</span>
-  <span><kbd>Space</kbd> 跳（需切 D 骨骼 rig）</span>
-  <span><kbd>Z</kbd> 攻击（魔理沙=扫帚 / 骑士=斩击）</span>
-  <span><kbd>X</kbd> 魔理沙炮 (Master Spark)</span>
-  <span><kbd>C</kbd> 挨一下（模拟受击）</span>
-  <span><kbd>R</kbd> 重置</span>
+  <span><kbd>A</kbd>/<kbd>←</kbd> <kbd>D</kbd>/<kbd>→</kbd> 移动</span>
+  <span><kbd>Space</kbd> 跳（骨骼 rig）</span>
+  <span><kbd>Z</kbd> 斩击</span>
+  <span><kbd>S</kbd>/<kbd>↓</kbd> 举盾（格挡）</span>
+  <span><kbd>Shift</kbd> 冲刺（无敌）</span>
+  <span><kbd>F</kbd> 高举宝剑</span>
+  <span><kbd>X</kbd> 魔理沙炮</span>
+  <span><kbd>C</kbd> 受击 / <kbd>V</kbd> 打桩 · <kbd>R</kbd> 重开</span>
 </div>
 
 <div id="gallery">
@@ -380,7 +411,13 @@ class PuppetRig {
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-        ctx.drawImage(img, -bone.pivot[0], -bone.pivot[1]);
+        const ss = bone.sprite_scale || 1;
+        if (ss !== 1) {
+          ctx.drawImage(img, -bone.pivot[0], -bone.pivot[1],
+                        img.naturalWidth * ss, img.naturalHeight * ss);
+        } else {
+          ctx.drawImage(img, -bone.pivot[0], -bone.pivot[1]);
+        }
         ctx.restore();
       }
       if (debug) {
@@ -518,6 +555,65 @@ const KNIGHT_JUMP_LAND = {
   ],
 };
 
+// Block — raises shield (back_forearm rotates forward). Loops while held.
+const KNIGHT_BLOCK = {
+  duration: 0.2, loop: true,
+  keyframes: [
+    { t: 0, pose: {
+        back_upper_arm: 45, back_forearm: 35, shield: 0,
+        torso: -3, head: 2,
+        front_upper_arm: -8, front_forearm: 5,
+    }},
+    { t: 1, pose: {
+        back_upper_arm: 45, back_forearm: 35, shield: 0,
+        torso: -3, head: 2,
+        front_upper_arm: -8, front_forearm: 5,
+    }},
+  ],
+};
+
+// Dash — quick forward lunge. Body leans forward, legs extend.
+const KNIGHT_DASH = {
+  duration: 0.3, loop: false,
+  keyframes: [
+    { t: 0, pose: {
+        __pelvis_dy: 0,
+        front_thigh: 0, front_shin: 0, back_thigh: 0, back_shin: 0,
+        torso: 0, head: 0,
+    }},
+    { t: 0.4, pose: {
+        __pelvis_dy: -4,
+        front_thigh: -35, front_shin: 25,
+        back_thigh:  25, back_shin: -30,
+        front_upper_arm: 30, front_forearm: -15,
+        back_upper_arm: -20, back_forearm: 10,
+        torso: -10, head: 5, cape: 15,
+    }},
+    { t: 1, pose: {
+        __pelvis_dy: 0,
+        front_thigh: -20, front_shin: 10, back_thigh: 15, back_shin: -15,
+        torso: -3, head: 2,
+    }},
+  ],
+};
+
+// Cast — raise sword overhead, charge up. Like a victory/charge pose.
+const KNIGHT_CAST = {
+  duration: 0.9, loop: false,
+  keyframes: [
+    { t: 0,   pose: { front_upper_arm: 0, front_forearm: 0, sword: 0, torso: 0, head: 0 } },
+    { t: 0.4, pose: {
+        front_upper_arm: -160, front_forearm: -20, sword: 10,
+        torso: -5, head: -8, cape: 5,
+    }},
+    { t: 0.8, pose: {
+        front_upper_arm: -160, front_forearm: -20, sword: 10,
+        torso: -5, head: -8, cape: 5,
+    }},
+    { t: 1, pose: { front_upper_arm: 0, front_forearm: 0, sword: 0, torso: 0, head: 0 } },
+  ],
+};
+
 // Hurt reaction (0.45s). Head back, arms out, staggered.
 const KNIGHT_HURT = {
   duration: 0.5, loop: false,
@@ -558,13 +654,9 @@ async function loadKnightRig() {
     sprites[name] = await loadImg(`experiments/D_puppet_rig/parts/${name}.png`);
   }));
   knightRig = new PuppetRig(skel, sprites, {
-    walk: KNIGHT_WALK,
-    idle: KNIGHT_IDLE,
-    attack: KNIGHT_ATTACK,
-    jump_ascend: KNIGHT_JUMP_ASCEND,
-    jump_fall: KNIGHT_JUMP_FALL,
-    jump_land: KNIGHT_JUMP_LAND,
-    hurt: KNIGHT_HURT,
+    walk: KNIGHT_WALK, idle: KNIGHT_IDLE, attack: KNIGHT_ATTACK,
+    jump_ascend: KNIGHT_JUMP_ASCEND, jump_fall: KNIGHT_JUMP_FALL, jump_land: KNIGHT_JUMP_LAND,
+    hurt: KNIGHT_HURT, block: KNIGHT_BLOCK, dash: KNIGHT_DASH, cast: KNIGHT_CAST,
   });
   return knightRig;
 }
@@ -574,7 +666,8 @@ async function loadKnightRig() {
 let knightRigE = null;
 async function loadKnightRigE() {
   if (knightRigE) return knightRigE;
-  const skelData = await fetch('experiments/E_part_gen/skeleton_e.json').then(r => r.json());
+  // v2: auto-computed offsets from detected joints + normalized per-part scales
+  const skelData = await fetch('experiments/E_part_gen/skeleton_e2.json').then(r => r.json());
   // Load unique sprite files once, reuse per-bone by 'sprite' field
   const spriteNames = [...new Set(skelData.skeleton.filter(b => b.sprite).map(b => b.sprite))];
   const spriteImgs = {};
@@ -590,13 +683,9 @@ async function loadKnightRigE() {
     { skeleton: skelData.skeleton, pelvis_anchor: [0, 0] },
     boneSprites,
     {
-      walk: KNIGHT_WALK,
-      idle: KNIGHT_IDLE,
-      attack: KNIGHT_ATTACK,
-      jump_ascend: KNIGHT_JUMP_ASCEND,
-      jump_fall: KNIGHT_JUMP_FALL,
-      jump_land: KNIGHT_JUMP_LAND,
-      hurt: KNIGHT_HURT,
+      walk: KNIGHT_WALK, idle: KNIGHT_IDLE, attack: KNIGHT_ATTACK,
+      jump_ascend: KNIGHT_JUMP_ASCEND, jump_fall: KNIGHT_JUMP_FALL, jump_land: KNIGHT_JUMP_LAND,
+      hurt: KNIGHT_HURT, block: KNIGHT_BLOCK, dash: KNIGHT_DASH, cast: KNIGHT_CAST,
     },
   );
   return knightRigE;
@@ -606,16 +695,12 @@ async function loadKnightRigE() {
 const GAME_W = 1920, GAME_H = 1080;
 const GROUND_Y = 900;
 const state = {
-  x: 500, y: GROUND_Y,
-  vy: 0,
-  onGround: true,
-  facing: 1,
-  animName: 'idle',
-  frameIdx: 0,
-  frameStartTime: 0,
-  animStartTime: 0,
-  animLocked: false,
-  animEndTime: 0,
+  x: 500, y: GROUND_Y, vy: 0, onGround: true, facing: 1,
+  animName: 'idle', frameIdx: 0, frameStartTime: 0, animStartTime: 0,
+  animLocked: false, animEndTime: 0,
+  // Combat
+  hp: 100, blocking: false, invincible: false, gameOver: null,
+  lastDash: 0, dashEnd: 0,
 };
 const GRAVITY = 1.1;
 const JUMP_VY = -22;
@@ -629,7 +714,8 @@ ctx.imageSmoothingQuality = 'high';
 const KEYS = {};
 addEventListener('keydown', e => {
   KEYS[e.code] = true;
-  if (['ArrowLeft','ArrowRight','Space','KeyZ','KeyX','KeyC','KeyR','KeyA','KeyD'].includes(e.code)) e.preventDefault();
+  if (['ArrowLeft','ArrowRight','Space','KeyZ','KeyX','KeyC','KeyR','KeyA','KeyD',
+       'KeyS','KeyF','KeyV','ShiftLeft','ShiftRight','ArrowDown'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup', e => { KEYS[e.code] = false; });
 
@@ -679,18 +765,30 @@ function updateAnim(now) {
 function handleInput(now) {
   // Jump always ignores animLocked if on ground (responsive)
   if (KEYS['Space'] && state.onGround) {
-    state.vy = JUMP_VY;
-    state.onGround = false;
+    state.vy = JUMP_VY; state.onGround = false;
     setAnim('jump', false);
   }
   if (state.animLocked) return;
   const left = KEYS['ArrowLeft'] || KEYS['KeyA'];
   const right = KEYS['ArrowRight'] || KEYS['KeyD'];
+  // Block (hold S / ↓) -- while held, shield up. Exits when released.
+  const blocking = (KEYS['KeyS'] || KEYS['ArrowDown']) && state.onGround;
+  if (blocking) { setAnim('block', false); state.blocking = true; return; }
+  else state.blocking = false;
+  // Dash (Shift) -- short forward burst, invincible
+  if ((KEYS['ShiftLeft'] || KEYS['ShiftRight']) && state.onGround && now - state.lastDash > 800) {
+    state.lastDash = now;
+    state.dashEnd = now + 300;
+    state.invincible = true;
+    state.x += state.facing * 60;   // impulse
+    setAnim('dash', true);
+    return;
+  }
   if (KEYS['KeyZ']) { setAnim('slash', true); return; }
-  if (KEYS['KeyX']) { setAnim('spark', true); return; }
-  if (KEYS['KeyC']) { setAnim('hurt', true);  return; }
-  if (KEYS['KeyR']) { state.x = 500; state.y = GROUND_Y; state.vy = 0; state.onGround = true; setAnim('idle', false); return; }
-  // Air state — don't override jump/fall with walk/idle while airborne
+  if (KEYS['KeyF']) { setAnim('cast', true); return; }
+  if (KEYS['KeyC']) { dealDamageToPlayer(15); return; }  // "take damage" test
+  if (KEYS['KeyV']) { dealDamageToDummy(20); return; }   // "attack dummy" test
+  if (KEYS['KeyR']) { resetCombat(); return; }
   if (!state.onGround) return;
   if (left) {
     state.facing = -1;
@@ -703,6 +801,30 @@ function handleInput(now) {
   } else {
     setAnim('idle');
   }
+}
+
+function dealDamageToPlayer(amount) {
+  if (state.invincible || state.blocking) return;
+  state.hp = Math.max(0, state.hp - amount);
+  setAnim('hurt', true);
+  state.invincible = true;
+  setTimeout(() => { state.invincible = false; }, 500);
+  if (state.hp <= 0) state.gameOver = 'lose';
+}
+
+function dealDamageToDummy(amount) {
+  if (dummyScene.hp <= 0) return;
+  dummyScene.hp = Math.max(0, dummyScene.hp - amount);
+  dummyScene.dummyWobble = 18;
+  dummyScene.hitFlash = 8;
+  if (dummyScene.hp <= 0) state.gameOver = 'win';
+}
+
+function resetCombat() {
+  state.x = 500; state.y = GROUND_Y; state.vy = 0; state.onGround = true;
+  state.hp = 100; state.blocking = false; state.invincible = false; state.gameOver = null;
+  dummyScene.hp = 100; dummyScene.hitFlash = 0;
+  setAnim('idle', false);
 }
 
 function physics(dtMs) {
@@ -723,8 +845,7 @@ function physics(dtMs) {
 
 // --- Drawing ---
 const dummyScene = {
-  dummyX: 1400,
-  dummyWobble: 0,
+  dummyX: 1400, dummyWobble: 0, hp: 100, hitFlash: 0,
 };
 
 function drawBackground() {
@@ -800,11 +921,12 @@ function drawMarisa() {
     else if (state.animName === 'fall') rigAnim = 'jump_fall';
     else if (state.animName === 'land') rigAnim = 'jump_land';
     const localT = (performance.now() - state.animStartTime) / 1000;
-    // E rig uses a different scale because parts are pixel-art sized differently.
-    // E parts total vertical "rest pose" height is roughly torso(425) + thigh(472) + shin(349) = 1246
-    // D rig uses character total ~836. Adjust scale to match on-screen height ~540 px.
-    const SCALE = currentVariant === 'E_rig' ? 0.42 : 0.65;
-    const FEET_TO_PELVIS_SCALED = currentVariant === 'E_rig' ? 330 : 188;
+    // E rig v2 normalizes parts to TARGET_H=800 so its assembled character is
+    // ~800 px tall. Render at scale to get ~540 on screen.
+    const SCALE = currentVariant === 'E_rig' ? 0.70 : 0.65;
+    // Distance from pelvis origin to feet in the v2 rig's local coords =
+    // thigh.height + shin.height ≈ 176 + 176 = 352 (target pixels).
+    const FEET_TO_PELVIS_SCALED = currentVariant === 'E_rig' ? Math.round(352 * 0.70) : 188;
     const pelvisScreenY = state.y - FEET_TO_PELVIS_SCALED;
     rig.render(ctx, rigAnim, localT, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
@@ -865,20 +987,40 @@ function drawMarisa() {
   }
 }
 
-// --- Hit detection (simple AABB) ---
+// --- Hit detection ---
+// For rig variants, use animation phase (localT) to pick the strike window.
+// For flat-sprite variants, keep the frame-index check.
+let _lastHitAttackStart = -1;
 function checkHit() {
-  if (state.animName === 'slash' && state.frameIdx === 1) {
-    const reach = state.facing * 200;
-    if (Math.abs(state.x + reach - dummyScene.dummyX) < 150) {
-      dummyScene.dummyWobble = 10;
+  // Register a hit ONCE per attack — on the first tick we see slash with an
+  // animStartTime we haven't processed yet. Don't depend on animation phase
+  // (tab-throttling can make us miss the window).
+  if (state.animName === 'slash' && _lastHitAttackStart !== state.animStartTime) {
+    _lastHitAttackStart = state.animStartTime;
+    const reach = state.facing * 250;
+    if (Math.abs(state.x + reach - dummyScene.dummyX) < 220) {
+      dealDamageToDummy(20);
     }
   }
 }
 
 // --- HUD update ---
+const $go = document.getElementById('game-over');
+const $goTitle = document.getElementById('game-over-title');
 function updateHud() {
-  document.getElementById('state-label').textContent = state.animName + (state.animLocked ? ' (locked)' : '');
-  document.getElementById('frame-label').textContent = state.frameIdx;
+  document.getElementById('state-label').textContent = state.animName +
+    (state.animLocked ? ' (locked)' : '') + (state.blocking ? ' + blocking' : '') + (state.invincible ? ' + i-frames' : '');
+  document.getElementById('hp-player').style.width = state.hp + '%';
+  document.getElementById('hp-dummy').style.width  = dummyScene.hp + '%';
+  document.getElementById('hp-player-num').textContent = state.hp;
+  document.getElementById('hp-dummy-num').textContent  = dummyScene.hp;
+  if (state.gameOver) {
+    $go.style.display = 'flex';
+    $go.classList.toggle('lose', state.gameOver === 'lose');
+    $goTitle.textContent = state.gameOver === 'win' ? '胜利！' : '阵亡…';
+  } else {
+    $go.style.display = 'none';
+  }
 }
 
 // --- Main loop ---
