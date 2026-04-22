@@ -1,0 +1,17 @@
+{
+  "cost": 0.051142,
+  "elapsed": 50.902562856674194,
+  "usage": {
+    "input_tokens": 1382,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 358
+    },
+    "output_tokens": 1372,
+    "output_tokens_details": {
+      "image_tokens": 1372,
+      "text_tokens": 0
+    },
+    "total_tokens": 2754
+  }
+}

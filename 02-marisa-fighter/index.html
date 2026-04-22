@@ -71,6 +71,29 @@
   }
   #gallery-btn:hover { background: rgba(142,107,223,0.3); }
 
+  /* Variant tabs */
+  .variants {
+    display: flex; gap: 6px; margin-top: 10px; margin-bottom: 4px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .variant {
+    pointer-events: auto; cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(249,211,108,0.15);
+    color: var(--dim);
+    padding: 6px 14px; border-radius: 6px;
+    font-size: 12px; letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .variant:hover { color: var(--ink); border-color: rgba(249,211,108,0.4); }
+  .variant.active {
+    background: rgba(249,211,108,0.15);
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+  .variant small { display: block; color: var(--dim); font-size: 10px; margin-top: 2px; }
+  .variant.active small { color: rgba(249,211,108,0.7); }
+
   /* Controls help */
   .controls {
     margin-top: 12px; font-size: 12px; color: var(--dim);
@@ -140,6 +163,18 @@
 <h1>MARISA KIRISAME — FIGHTER TRAINING MODE</h1>
 <div class="subhead">gpt-image-2 depth test · 14 animation frames of the same character</div>
 
+<div class="variants" id="variant-tabs">
+  <button class="variant active" data-variant="original">
+    原版 <small>walk = 4× chain edits</small>
+  </button>
+  <button class="variant" data-variant="A">
+    A · 骨架条件 <small>ref + stick-figure pose</small>
+  </button>
+  <button class="variant" data-variant="B">
+    B · 4 联格生成 <small>1 strip → split</small>
+  </button>
+</div>
+
 <div id="arena-wrap">
   <canvas id="arena" width="1920" height="1080"></canvas>
 
@@ -172,14 +207,11 @@
 'use strict';
 
 // --- Assets ---
-const FRAME_FILES = [
+// Shared frames (non-walk) are the same across all variants — only walk_1..4 differ.
+const SHARED_FRAMES = [
   { key: 'idle_ref',    file: '01_idle_front_ref.png',     label: 'idle_ref (正面立绘)' },
   { key: 'idle_a',      file: '02_idle_breath_a.png',      label: 'idle_breath_a' },
   { key: 'idle_b',      file: '03_idle_breath_b.png',      label: 'idle_breath_b' },
-  { key: 'walk_1',      file: '04_walk_1.png',             label: 'walk 1/4' },
-  { key: 'walk_2',      file: '05_walk_2.png',             label: 'walk 2/4' },
-  { key: 'walk_3',      file: '06_walk_3.png',             label: 'walk 3/4' },
-  { key: 'walk_4',      file: '07_walk_4.png',             label: 'walk 4/4' },
   { key: 'slash_1',     file: '08_broom_slash_windup.png', label: 'broom slash windup' },
   { key: 'slash_2',     file: '09_broom_slash_strike.png', label: 'broom slash strike' },
   { key: 'slash_3',     file: '10_broom_slash_recover.png',label: 'broom slash recover' },
@@ -189,7 +221,35 @@ const FRAME_FILES = [
   { key: 'hurt',        file: '14_hurt.png',               label: 'hurt' },
 ];
 
+// Walk variants: each variant provides its own walk_1..walk_4.
+const WALK_VARIANTS = {
+  original: [
+    { key: 'walk_1', file: 'sprites/04_walk_1.png' },
+    { key: 'walk_2', file: 'sprites/05_walk_2.png' },
+    { key: 'walk_3', file: 'sprites/06_walk_3.png' },
+    { key: 'walk_4', file: 'sprites/07_walk_4.png' },
+  ],
+  A: [
+    { key: 'walk_1', file: 'experiments/A_skeleton_cond/alpha/walk_1.png' },
+    { key: 'walk_2', file: 'experiments/A_skeleton_cond/alpha/walk_2.png' },
+    { key: 'walk_3', file: 'experiments/A_skeleton_cond/alpha/walk_3.png' },
+    { key: 'walk_4', file: 'experiments/A_skeleton_cond/alpha/walk_4.png' },
+  ],
+  B: [
+    { key: 'walk_1', file: 'experiments/B_sprite_strip/alpha/walk_1.png' },
+    { key: 'walk_2', file: 'experiments/B_sprite_strip/alpha/walk_2.png' },
+    { key: 'walk_3', file: 'experiments/B_sprite_strip/alpha/walk_3.png' },
+    { key: 'walk_4', file: 'experiments/B_sprite_strip/alpha/walk_4.png' },
+  ],
+};
+
+// All frame files for the gallery view.
+const FRAME_FILES = SHARED_FRAMES.slice(0, 3).concat(
+  WALK_VARIANTS.original.map((f, i) => ({ key: f.key, file: f.file.replace('sprites/', ''), label: `walk ${i+1}/4` }))
+).concat(SHARED_FRAMES.slice(3));
+
 const sprites = {};
+let currentVariant = 'original';
 const SPRITE_DIR = 'sprites/';
 
 function loadImg(src) {
@@ -451,16 +511,42 @@ document.getElementById('gallery-btn').addEventListener('click', () => {
   document.getElementById('gallery').classList.add('show');
 });
 
+// --- Variant swap ---
+async function loadWalkVariant(name) {
+  currentVariant = name;
+  // Update tab UI
+  document.querySelectorAll('.variant').forEach(b => {
+    b.classList.toggle('active', b.dataset.variant === name);
+  });
+  // Load the 4 walk frames for this variant
+  const frames = WALK_VARIANTS[name];
+  await Promise.all(frames.map(async (f) => {
+    const img = await loadImg(f.file);
+    sprites[f.key] = img;
+  }));
+}
+
+document.querySelectorAll('.variant').forEach(btn => {
+  btn.addEventListener('click', () => loadWalkVariant(btn.dataset.variant));
+});
+
 // --- Boot ---
 async function boot() {
   const fill = document.getElementById('load-fill');
-  let loaded = 0;
-  await Promise.all(FRAME_FILES.map(async (f) => {
+  // Load shared frames from /sprites/
+  const sharedTasks = SHARED_FRAMES.map(async (f) => {
     const img = await loadImg(SPRITE_DIR + f.file);
     sprites[f.key] = img;
-    loaded += 1;
-    fill.style.width = (loaded / FRAME_FILES.length * 100) + '%';
-  }));
+  });
+  // Load default (original) walk variant
+  const walkTasks = WALK_VARIANTS.original.map(async (f) => {
+    const img = await loadImg(f.file);
+    sprites[f.key] = img;
+  });
+  const all = sharedTasks.concat(walkTasks);
+  let loaded = 0;
+  all.forEach(p => p.then(() => { loaded += 1; fill.style.width = (loaded / all.length * 100) + '%'; }));
+  await Promise.all(all);
   document.getElementById('loading').classList.add('hidden');
   loop();
 }

@@ -1,0 +1,70 @@
+{
+  "walk_1": {
+    "cost": 0.070254,
+    "elapsed": 59.2458074092865,
+    "usage": {
+      "input_tokens": 2286,
+      "input_tokens_details": {
+        "image_tokens": 2048,
+        "text_tokens": 238
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4042
+    }
+  },
+  "walk_2": {
+    "cost": 0.070254,
+    "elapsed": 64.18731760978699,
+    "usage": {
+      "input_tokens": 2286,
+      "input_tokens_details": {
+        "image_tokens": 2048,
+        "text_tokens": 238
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4042
+    }
+  },
+  "walk_3": {
+    "cost": 0.070254,
+    "elapsed": 52.96349024772644,
+    "usage": {
+      "input_tokens": 2286,
+      "input_tokens_details": {
+        "image_tokens": 2048,
+        "text_tokens": 238
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4042
+    }
+  },
+  "walk_4": {
+    "cost": 0.070254,
+    "elapsed": 75.60050678253174,
+    "usage": {
+      "input_tokens": 2286,
+      "input_tokens_details": {
+        "image_tokens": 2048,
+        "text_tokens": 238
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4042
+    }
+  }
+}
