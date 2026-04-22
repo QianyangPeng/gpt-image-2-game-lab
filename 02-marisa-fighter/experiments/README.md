@@ -131,6 +131,10 @@ Running project total: **$2.16 + $0.034 = $2.20**. (Also installed torch-cpu + c
 
 2. **Reference images anchor the entire batch to one viewpoint** — the knight strip turned out front-facing because the source was front-facing. The model doesn't re-project the character to side view just because you ask nicely.
 
+### ⚠️ Update (Part 3)
+
+I declared premature defeat here. The user correctly pushed back: **"你研究下独立游戏制作者是怎么解决的这一问题?"** Turns out what indies actually do is 2D skeletal rigging — completely different paradigm from pixel interpolation. I built a proof-of-concept in [D_puppet_rig/](D_puppet_rig/) that produces a genuinely fluid walk cycle from ONE gpt-image-2 image + 12-part segmentation + 4 keyframes of bone angles. See [D_puppet_rig/README.md](D_puppet_rig/README.md) for the full story. **The real ceiling is much higher.**
+
 ### What actually would make a fluid 2D action game with gpt-image-2
 
 Based on this run, the recipe is:

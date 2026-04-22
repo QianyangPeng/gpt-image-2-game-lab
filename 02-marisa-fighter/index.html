@@ -182,6 +182,9 @@
   <button class="variant" data-variant="C_xfade">
     C + crossfade <small>baseline</small>
   </button>
+  <button class="variant" data-variant="D_rig">
+    D · 骨骼 rig <small>1 image → 12 parts → bones</small>
+  </button>
 </div>
 
 <div id="arena-wrap">
@@ -294,6 +297,158 @@ const ANIM = {
 
 // Per-variant walk fps: denser interpolated sets play faster to keep cycle duration roughly constant.
 const WALK_FPS = { original: 8, A: 8, B: 8, C_keyframe: 12, C_flow: 32, C_xfade: 32 };
+
+// ============================================================================
+// D variant: puppet rig. 1 side-view knight image -> 12 body parts -> bones.
+// ============================================================================
+
+class PuppetRig {
+  constructor(skeletonJson, spriteMap, animations) {
+    this.bones = skeletonJson.skeleton;
+    this.pelvisAnchor = skeletonJson.pelvis_anchor || [510, 640];
+    this.sprites = spriteMap;
+    this.animations = animations;
+    this.bonesByName = Object.fromEntries(this.bones.map(b => [b.name, b]));
+  }
+
+  poseAt(animName, t) {
+    const anim = this.animations[animName];
+    if (!anim) return {};
+    const phase = (t % anim.duration) / anim.duration;
+    const kfs = anim.keyframes;
+    let k0, k1, t0, t1;
+    for (let i = 0; i < kfs.length; i++) {
+      const next = (i + 1) % kfs.length;
+      const nextT = i === kfs.length - 1 ? kfs[next].t + 1 : kfs[next].t;
+      if (phase >= kfs[i].t && phase < nextT) {
+        k0 = kfs[i]; k1 = kfs[next];
+        t0 = k0.t; t1 = nextT;
+        break;
+      }
+    }
+    if (!k0) { k0 = kfs[0]; k1 = kfs[1] || kfs[0]; t0 = k0.t; t1 = k1.t; }
+    const alpha = t1 === t0 ? 0 : (phase - t0) / (t1 - t0);
+    const pose = {};
+    const boneSet = new Set([...Object.keys(k0.pose), ...Object.keys(k1.pose)]);
+    for (const name of boneSet) {
+      const a = k0.pose[name] ?? 0;
+      const b = k1.pose[name] ?? 0;
+      pose[name] = a + (b - a) * alpha;
+    }
+    // Also interpolate pelvis_dy for body bob
+    pose.__pelvis_dy = (k0.pose.__pelvis_dy ?? 0) + ((k1.pose.__pelvis_dy ?? 0) - (k0.pose.__pelvis_dy ?? 0)) * alpha;
+    return pose;
+  }
+
+  worldMatrix(boneName, pose, cache) {
+    if (cache[boneName]) return cache[boneName];
+    const bone = this.bonesByName[boneName];
+    let m = bone.parent ? new DOMMatrix(this.worldMatrix(bone.parent, pose, cache)) : new DOMMatrix();
+    let ox = bone.offset[0], oy = bone.offset[1];
+    if (bone.name === 'pelvis') {
+      oy += pose.__pelvis_dy || 0;
+    }
+    m.translateSelf(ox, oy);
+    m.rotateSelf(pose[bone.name] || 0);
+    cache[boneName] = m;
+    return m;
+  }
+
+  render(ctx, animName, t, opts = {}) {
+    const { x = 0, y = 0, facing = 1, scale = 1, debug = false } = opts;
+    const pose = this.poseAt(animName, t);
+    const cache = {};
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(facing * scale, scale);
+    const ordered = [...this.bones].sort((a, b) => (a.z || 0) - (b.z || 0));
+    for (const bone of ordered) {
+      const m = this.worldMatrix(bone.name, pose, cache);
+      const img = this.sprites[bone.name];
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+        ctx.drawImage(img, -bone.pivot[0], -bone.pivot[1]);
+        ctx.restore();
+      }
+      if (debug) {
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+        ctx.fillStyle = '#f9d36c';
+        ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+}
+
+// Walk-cycle animation keyframes (front-ish 3/4 view).
+// Angles are in degrees. __pelvis_dy shifts pelvis vertically for body bob.
+const KNIGHT_WALK = {
+  duration: 0.8,
+  keyframes: [
+    { t: 0.0, pose: {
+        __pelvis_dy: 0,
+        front_thigh: -22, front_shin: 18,
+        back_thigh:  22, back_shin: -25,
+        front_upper_arm: 18, front_forearm: -10,
+        back_upper_arm: -18, back_forearm: 8,
+        torso: -2, head: 2, cape: -8, sword: 0,
+    }},
+    { t: 0.25, pose: {
+        __pelvis_dy: -6,
+        front_thigh: 0, front_shin: -5,
+        back_thigh:  0, back_shin: -5,
+        front_upper_arm: 0, front_forearm: 0,
+        back_upper_arm: 0, back_forearm: 0,
+        torso: 0, head: 0, cape: 0, sword: 0,
+    }},
+    { t: 0.5, pose: {
+        __pelvis_dy: 0,
+        front_thigh: 22, front_shin: -25,
+        back_thigh: -22, back_shin: 18,
+        front_upper_arm: -18, front_forearm: 8,
+        back_upper_arm: 18, back_forearm: -10,
+        torso: 2, head: -2, cape: 8, sword: 0,
+    }},
+    { t: 0.75, pose: {
+        __pelvis_dy: -6,
+        front_thigh: 0, front_shin: -5,
+        back_thigh:  0, back_shin: -5,
+        front_upper_arm: 0, front_forearm: 0,
+        back_upper_arm: 0, back_forearm: 0,
+        torso: 0, head: 0, cape: 0, sword: 0,
+    }},
+  ],
+};
+
+const KNIGHT_IDLE = {
+  duration: 2.0,
+  keyframes: [
+    { t: 0,   pose: { __pelvis_dy: 0, torso: 0, head: 0, cape: 0 } },
+    { t: 0.5, pose: { __pelvis_dy: -3, torso: 1, head: -1, cape: -3 } },
+    { t: 1,   pose: { __pelvis_dy: 0, torso: 0, head: 0, cape: 0 } },
+  ],
+};
+
+const RIG_PART_NAMES = [
+  'cape', 'back_thigh', 'back_shin', 'back_upper_arm', 'back_forearm',
+  'torso', 'head', 'front_thigh', 'front_shin', 'front_upper_arm',
+  'front_forearm', 'sword',
+];
+
+let knightRig = null;
+async function loadKnightRig() {
+  if (knightRig) return knightRig;
+  const skel = await fetch('experiments/D_puppet_rig/skeleton.json').then(r => r.json());
+  const sprites = {};
+  await Promise.all(RIG_PART_NAMES.map(async name => {
+    sprites[name] = await loadImg(`experiments/D_puppet_rig/parts/${name}.png`);
+  }));
+  knightRig = new PuppetRig(skel, sprites, { walk: KNIGHT_WALK, idle: KNIGHT_IDLE });
+  return knightRig;
+}
 
 // --- State ---
 const GAME_W = 1920, GAME_H = 1080;
@@ -442,6 +597,21 @@ function drawDummy() {
 }
 
 function drawMarisa() {
+  // Rig variant renders via PuppetRig, not the flat-sprite path.
+  if (currentVariant === 'D_rig' && knightRig) {
+    const animName = (state.animName === 'walk') ? 'walk' : 'idle';
+    const t = performance.now() / 1000;
+    // Scale so character height ~ 500px on the 1920px arena.
+    // Source knight is ~836px tall. Target 500 -> scale 0.6.
+    const SCALE = 0.7;
+    // Anchor so the pelvis lands near the feet on screen.
+    const pelvisScreenY = state.y - 340;   // raise pelvis above ground
+    knightRig.render(ctx, animName, t, {
+      x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
+    });
+    return;
+  }
+
   const anim = ANIM[state.animName];
   const frameKey = anim.frames[Math.min(state.frameIdx, anim.frames.length - 1)];
   const img = sprites[frameKey];
@@ -542,17 +712,20 @@ async function loadWalkVariant(name) {
   document.querySelectorAll('.variant').forEach(b => {
     b.classList.toggle('active', b.dataset.variant === name);
   });
+  if (name === 'D_rig') {
+    await loadKnightRig();
+    state.frameIdx = 0;
+    return;
+  }
   const frames = WALK_VARIANTS[name];
-  // Clear old walk_* keys first so stale ones don't linger
+  if (!frames) return;
   Object.keys(sprites).filter(k => k.startsWith('walk_')).forEach(k => delete sprites[k]);
   await Promise.all(frames.map(async (f) => {
     const img = await loadImg(f.file);
     sprites[f.key] = img;
   }));
-  // Rebuild the walk animation's frame list and fps for this variant.
   ANIM.walk.frames = frames.map(f => f.key);
   ANIM.walk.fps = WALK_FPS[name] || 8;
-  // Reset frame index so we don't overshoot when switching to a shorter set.
   state.frameIdx = 0;
   state.frameStartTime = performance.now();
 }
