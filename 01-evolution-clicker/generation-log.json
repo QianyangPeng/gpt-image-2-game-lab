@@ -1,0 +1,97 @@
+{
+  "stage1_seed": {
+    "cost": 0.2115,
+    "elapsed": 166.38460159301758,
+    "usage": {
+      "input_tokens": 156,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 156
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 7180
+    },
+    "path": "01-evolution-clicker\\frames\\stage1_seed.png",
+    "prompt": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.\n\nScene: a cozy wooden tabletop next to a window. On the table sits a small clay pot filled with dark soil. In the soil, a single large acorn-like magical seed rests with its tip just breaking the surface. The seed is glossy dark brown with glowing golden runes. Warm morning sunlight streams through the window, soft wood-grain background, dust motes in the air. Composition centered on the pot and seed. Pixel art, 32-bit JRPG style, warm palette."
+  },
+  "stage2_sprout": {
+    "cost": 0.061812,
+    "elapsed": 51.177098989486694,
+    "usage": {
+      "input_tokens": 1212,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 188
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 2968
+    },
+    "path": "01-evolution-clicker\\frames\\stage2_sprout.png",
+    "prompt": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.\n\nEdit the reference image. Same pixel-art style, same JRPG warm palette. Evolve the scene: the clay pot now sits on rich garden soil outdoors on a sunny lawn. The acorn-seed has burst open into a young sprout with two bright green cotyledon leaves and a tiny stem. Golden runes still glow faintly at the stem base. Background: soft green grass, a few small stones, distant hazy trees, bright blue sky. Composition: the sprout-in-pot centered, same vertical anchor (base of pot at about 75% down the canvas) as the reference. Keep art style constraints from reference."
+  },
+  "stage3_sapling": {
+    "cost": 0.061771999999999994,
+    "elapsed": 50.81398129463196,
+    "usage": {
+      "input_tokens": 1204,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 180
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 2960
+    },
+    "path": "01-evolution-clicker\\frames\\stage3_sapling.png",
+    "prompt": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.\n\nEdit the reference image. Same pixel-art style, same JRPG palette with added natural greens. Evolve: the pot has burst and the plant is now a young sapling rooted directly in a grass field on a gentle hill. Slender brown trunk about 60% canvas height, several leafy green branches, glowing golden runes floating around the trunk base like fireflies. Background: rolling green hills, distant forest, fluffy clouds in bright blue sky, maybe a small deer or rabbit in the distance. Composition centered, base of the trunk at about 80% vertical. Keep art style constraints from reference."
+  },
+  "stage4_ancient_ent": {
+    "cost": 0.061801999999999996,
+    "elapsed": 51.363449811935425,
+    "usage": {
+      "input_tokens": 1210,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 186
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 2966
+    },
+    "path": "01-evolution-clicker\\frames\\stage4_ancient_ent.png",
+    "prompt": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.\n\nEdit the reference image. Same pixel-art style, deeper forest-green and mossy palette. The entity has transformed into a towering ancient ent: gnarled tree-creature with humanoid wise face carved into the trunk, two knotty branch arms ending in leafy hands, thick root-legs planted firmly in mossy ground. Golden runes glow brightly in the cracks of its bark. About 90% canvas height. Background: misty deep forest with shafts of sunlight, ancient stone ruins between distant trees, moss-covered rocks, fireflies. Composition centered, roots anchored at about 85% vertical. Keep art style constraints from reference."
+  },
+  "stage5_world_tree": {
+    "cost": 0.219967,
+    "elapsed": 169.42680501937866,
+    "usage": {
+      "input_tokens": 1235,
+      "input_tokens_details": {
+        "image_tokens": 1024,
+        "text_tokens": 211
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8259
+    },
+    "path": "01-evolution-clicker\\frames\\stage5_world_tree.png",
+    "prompt": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.\n\nEdit the reference image. Same pixel-art style, now with celestial palette: glowing gold, soft cyan, ethereal white highlights added to the natural greens. The entity is now a cosmic World Tree deity: colossal mystical tree filling the canvas, trunk brilliant with golden runes, branches cradling tiny floating stars, moons, and planets, ancient all-seeing face in the trunk with glowing eyes, massive glowing roots digging into a floating patch of sacred soil suspended in space. Background: deep starry cosmos, swirling nebulae of purple and teal, distant galaxies, a soft divine aura of golden particles surrounding the tree. Epic and awe-inspiring. Centered composition, base of floating soil at 85% vertical. Keep pixel-art style constraints from reference."
+  }
+}

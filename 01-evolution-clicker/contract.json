@@ -1,0 +1,43 @@
+{
+  "demo": "01-evolution-clicker",
+  "title": "Sprout to World Tree",
+  "description": "Incremental clicker: water a tiny seed, watch it evolve through 5 dramatic transformations into a divine world tree. Tests gpt-image-2 image-edit consistency across radical transformations of the same entity — PLUS scene coherence as environment evolves with the creature.",
+  "canvas_size": "1024x1024",
+  "style_preamble": "Pixel-art illustration, 32-bit JRPG aesthetic, vibrant saturated palette, clean edges, slight dithering. Hero subject centered and occupying most of canvas. No text, no letters, no numbers, no UI elements, no watermarks, no borders.",
+  "frames": [
+    {
+      "name": "stage1_seed",
+      "role": "reference_master",
+      "quality": "high",
+      "prompt": "Scene: a cozy wooden tabletop next to a window. On the table sits a small clay pot filled with dark soil. In the soil, a single large acorn-like magical seed rests with its tip just breaking the surface. The seed is glossy dark brown with glowing golden runes. Warm morning sunlight streams through the window, soft wood-grain background, dust motes in the air. Composition centered on the pot and seed. Pixel art, 32-bit JRPG style, warm palette."
+    },
+    {
+      "name": "stage2_sprout",
+      "role": "evolution_2",
+      "quality": "medium",
+      "reference": "stage1_seed",
+      "prompt": "Edit the reference image. Same pixel-art style, same JRPG warm palette. Evolve the scene: the clay pot now sits on rich garden soil outdoors on a sunny lawn. The acorn-seed has burst open into a young sprout with two bright green cotyledon leaves and a tiny stem. Golden runes still glow faintly at the stem base. Background: soft green grass, a few small stones, distant hazy trees, bright blue sky. Composition: the sprout-in-pot centered, same vertical anchor (base of pot at about 75% down the canvas) as the reference. Keep art style constraints from reference."
+    },
+    {
+      "name": "stage3_sapling",
+      "role": "evolution_3",
+      "quality": "medium",
+      "reference": "stage1_seed",
+      "prompt": "Edit the reference image. Same pixel-art style, same JRPG palette with added natural greens. Evolve: the pot has burst and the plant is now a young sapling rooted directly in a grass field on a gentle hill. Slender brown trunk about 60% canvas height, several leafy green branches, glowing golden runes floating around the trunk base like fireflies. Background: rolling green hills, distant forest, fluffy clouds in bright blue sky, maybe a small deer or rabbit in the distance. Composition centered, base of the trunk at about 80% vertical. Keep art style constraints from reference."
+    },
+    {
+      "name": "stage4_ancient_ent",
+      "role": "evolution_4",
+      "quality": "medium",
+      "reference": "stage1_seed",
+      "prompt": "Edit the reference image. Same pixel-art style, deeper forest-green and mossy palette. The entity has transformed into a towering ancient ent: gnarled tree-creature with humanoid wise face carved into the trunk, two knotty branch arms ending in leafy hands, thick root-legs planted firmly in mossy ground. Golden runes glow brightly in the cracks of its bark. About 90% canvas height. Background: misty deep forest with shafts of sunlight, ancient stone ruins between distant trees, moss-covered rocks, fireflies. Composition centered, roots anchored at about 85% vertical. Keep art style constraints from reference."
+    },
+    {
+      "name": "stage5_world_tree",
+      "role": "evolution_5_final",
+      "quality": "high",
+      "reference": "stage1_seed",
+      "prompt": "Edit the reference image. Same pixel-art style, now with celestial palette: glowing gold, soft cyan, ethereal white highlights added to the natural greens. The entity is now a cosmic World Tree deity: colossal mystical tree filling the canvas, trunk brilliant with golden runes, branches cradling tiny floating stars, moons, and planets, ancient all-seeing face in the trunk with glowing eyes, massive glowing roots digging into a floating patch of sacred soil suspended in space. Background: deep starry cosmos, swirling nebulae of purple and teal, distant galaxies, a soft divine aura of golden particles surrounding the tree. Epic and awe-inspiring. Centered composition, base of floating soil at 85% vertical. Keep pixel-art style constraints from reference."
+    }
+  ]
+}

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sprout to World Tree — gpt-image-2 demo</title>
+<style>
+  :root {
+    --bg-top: #1a1428;
+    --bg-bot: #2a2240;
+    --gold: #f9d36c;
+    --ink: #f4ecd8;
+    --dim: #8c819b;
+    --panel: rgba(255, 255, 255, 0.06);
+    --panel-border: rgba(255, 255, 255, 0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(ellipse at top, var(--bg-bot), var(--bg-top) 70%);
+    color: var(--ink);
+    font-family: "Noto Serif SC", "Source Han Serif", Georgia, serif;
+    min-height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto 1fr auto;
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  @media (max-width: 900px) {
+    #stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; }
+    #sidebar { max-height: 30vh; }
+  }
+  /* HEADER */
+  header {
+    grid-column: 1 / -1;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 18px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+  }
+  header h1 { font-size: 18px; letter-spacing: 2px; color: var(--gold); font-weight: 600; }
+  header .badges { display: flex; gap: 10px; font-size: 13px; color: var(--dim); }
+  header .badges span b { color: var(--ink); font-weight: 400; }
+
+  /* MAIN PLANT VIEW */
+  main {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+  }
+  .plant-wrap {
+    position: relative;
+    width: min(80vmin, 560px);
+    aspect-ratio: 1;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+    transition: transform 0.12s ease-out;
+  }
+  main:active .plant-wrap { transform: scale(0.97); }
+  .plant-wrap img {
+    width: 100%; height: 100%; object-fit: contain;
+    image-rendering: auto;
+    opacity: 0;
+    position: absolute; inset: 0;
+    transition: opacity 0.9s ease;
+  }
+  .plant-wrap img.active { opacity: 1; }
+  .plant-wrap.evolving { animation: bloom 1.2s ease-out; }
+  @keyframes bloom {
+    0%   { filter: brightness(1) drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+    30%  { filter: brightness(2.5) drop-shadow(0 0 80px #fff8c8) drop-shadow(0 0 140px var(--gold)); }
+    70%  { filter: brightness(1.3) drop-shadow(0 0 40px var(--gold)); }
+    100% { filter: brightness(1) drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+  }
+
+  .stage-name {
+    position: absolute; top: 18px; left: 0; right: 0; text-align: center;
+    font-size: 22px; letter-spacing: 3px; color: var(--gold);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    pointer-events: none;
+  }
+  .hint {
+    position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;
+    font-size: 13px; color: var(--dim);
+    pointer-events: none;
+  }
+
+  /* DROP PARTICLES */
+  .drop {
+    position: absolute;
+    font-size: 22px;
+    pointer-events: none;
+    animation: float-up 0.9s ease-out forwards;
+    color: #a8dbff;
+    text-shadow: 0 0 8px #6cf;
+  }
+  @keyframes float-up {
+    0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -80px) scale(0.6); opacity: 0; }
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    display: flex; flex-direction: column; gap: 12px;
+    overflow-y: auto;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .card h2 {
+    font-size: 12px; letter-spacing: 2px; color: var(--dim);
+    margin-bottom: 10px; font-weight: 600;
+  }
+  .stat-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 14px; }
+  .stat-row span:first-child { color: var(--dim); }
+  .stat-row span:last-child { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .blessings {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .blessing {
+    padding: 8px 12px; border-radius: 10px;
+    background: rgba(249, 211, 108, 0.08);
+    border: 1px solid rgba(249, 211, 108, 0.2);
+    font-size: 13px;
+  }
+  .blessing.locked {
+    opacity: 0.35;
+    background: rgba(255,255,255,0.03);
+    border-color: var(--panel-border);
+  }
+  .blessing b { color: var(--gold); display: block; margin-bottom: 2px; }
+  .blessing small { color: var(--dim); }
+
+  /* PROGRESS BAR */
+  footer {
+    grid-column: 1 / -1;
+    padding: 10px 18px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+  }
+  .progress {
+    width: 100%; height: 20px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #a8e063, var(--gold));
+    border-radius: 10px;
+    transition: width 0.2s ease;
+    box-shadow: 0 0 12px rgba(249, 211, 108, 0.5);
+  }
+  .progress .text {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; letter-spacing: 1px;
+    color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* VICTORY OVERLAY */
+  #win-overlay {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    background: radial-gradient(ellipse at center, rgba(50, 20, 80, 0.9), rgba(10, 5, 20, 0.98));
+    z-index: 10;
+    animation: fadein 2s ease forwards;
+  }
+  #win-overlay.show { display: flex; }
+  #win-overlay h2 { font-size: 42px; color: var(--gold); letter-spacing: 8px; text-shadow: 0 0 30px rgba(249,211,108,0.6); }
+  #win-overlay p { color: var(--ink); font-size: 16px; max-width: 420px; text-align: center; line-height: 1.7; }
+  @keyframes fadein {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  .meta-footer {
+    position: fixed; bottom: 6px; right: 12px;
+    font-size: 11px; color: var(--dim);
+    pointer-events: none;
+  }
+  .meta-footer a { color: var(--dim); pointer-events: auto; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <header>
+    <h1>SPROUT → WORLD TREE</h1>
+    <div class="badges">
+      <span>每点 +<b id="click-val">1</b> 灵气</span>
+      <span>被动 +<b id="idle-val">0</b>/秒</span>
+    </div>
+  </header>
+
+  <main id="plant-area">
+    <div class="stage-name" id="stage-name">种子</div>
+    <div class="plant-wrap" id="plant-wrap">
+      <img data-stage="1" src="frames/stage1_seed.png" alt="stage 1" class="active" />
+      <img data-stage="2" src="frames/stage2_sprout.png" alt="stage 2" />
+      <img data-stage="3" src="frames/stage3_sapling.png" alt="stage 3" />
+      <img data-stage="4" src="frames/stage4_ancient_ent.png" alt="stage 4" />
+      <img data-stage="5" src="frames/stage5_world_tree.png" alt="stage 5" />
+    </div>
+    <div class="hint" id="hint">点击浇水 / 空格连浇</div>
+  </main>
+
+  <aside id="sidebar">
+    <div class="card">
+      <h2>当前状态</h2>
+      <div class="stat-row"><span>阶段</span><span id="stat-stage">1 / 5</span></div>
+      <div class="stat-row"><span>灵气</span><span id="stat-xp">0</span></div>
+      <div class="stat-row"><span>点击总数</span><span id="stat-clicks">0</span></div>
+    </div>
+    <div class="card">
+      <h2>祝福 BLESSINGS</h2>
+      <div class="blessings" id="blessings"></div>
+    </div>
+  </aside>
+
+  <footer>
+    <div class="progress">
+      <div class="fill" id="fill" style="width: 0%"></div>
+      <div class="text" id="progress-text">0 / 10</div>
+    </div>
+  </footer>
+</div>
+
+<div id="win-overlay">
+  <h2>世界树觉醒</h2>
+  <p>你培育的灵种历经五次蜕变，已化作承载星辰的宇宙之树。<br>万物借其根系而生，诸神自其枝头诞降。</p>
+  <p style="color: var(--gold); font-size: 14px;">Demo 通关 · 按 <b>R</b> 重开</p>
+</div>
+
+<div class="meta-footer">
+  gpt-image-2 game lab · <a href="https://github.com/QianyangPeng/gpt-image-2-game-lab" target="_blank">source</a>
+</div>
+
+<script>
+'use strict';
+
+// --- Stage data ---
+const STAGES = [
+  { id: 1, name: '种子',        threshold: 10,      blessing: null },
+  { id: 2, name: '幼苗',        threshold: 100,     blessing: { idle: 0.5, click: 0,  label: '幼苗之息',  desc: '+0.5/秒 被动灵气' } },
+  { id: 3, name: '树苗',        threshold: 1000,    blessing: { idle: 3,   click: 2,  label: '树苗祝福',  desc: '+3/秒, 每点 +2' } },
+  { id: 4, name: '远古树人',     threshold: 10000,   blessing: { idle: 15,  click: 5,  label: '古木真意',  desc: '+15/秒, 每点 +5' } },
+  { id: 5, name: '世界树',       threshold: Infinity, blessing: { idle: 50,  click: 10, label: '世界之根',  desc: '+50/秒, 每点 +10' } },
+];
+
+// --- State ---
+const state = {
+  stage: 1,
+  xp: 0,
+  clickValue: 1,
+  idleRate: 0,
+  totalClicks: 0,
+  unlocked: [], // stage ids whose blessing has been unlocked
+  won: false,
+};
+
+// --- DOM ---
+const $ = (id) => document.getElementById(id);
+const els = {
+  plantWrap: $('plant-wrap'),
+  stageName: $('stage-name'),
+  fill: $('fill'),
+  progressText: $('progress-text'),
+  clickVal: $('click-val'),
+  idleVal: $('idle-val'),
+  statStage: $('stat-stage'),
+  statXp: $('stat-xp'),
+  statClicks: $('stat-clicks'),
+  blessings: $('blessings'),
+  plantArea: $('plant-area'),
+  hint: $('hint'),
+  winOverlay: $('win-overlay'),
+};
+
+// --- Format ---
+function fmt(n) {
+  if (n === Infinity) return '∞';
+  if (n < 1000) return n.toFixed(n % 1 === 0 ? 0 : 1);
+  if (n < 1e6) return (n / 1000).toFixed(1) + 'K';
+  if (n < 1e9) return (n / 1e6).toFixed(2) + 'M';
+  return n.toExponential(2);
+}
+
+// --- Blessings rendering ---
+function renderBlessings() {
+  const html = STAGES.slice(1).map((s, i) => {
+    const locked = !state.unlocked.includes(s.id);
+    return `
+      <div class="blessing ${locked ? 'locked' : ''}">
+        <b>${locked ? '🔒 ' : '✦ '}${s.blessing.label}</b>
+        <small>${s.blessing.desc}</small>
+      </div>
+    `;
+  }).join('');
+  els.blessings.innerHTML = html;
+}
+
+// --- Stage switch with evolve animation ---
+function setStageVisual(stageId) {
+  els.plantWrap.querySelectorAll('img').forEach(img => {
+    img.classList.toggle('active', Number(img.dataset.stage) === stageId);
+  });
+  els.stageName.textContent = STAGES[stageId - 1].name;
+  els.statStage.textContent = `${stageId} / 5`;
+}
+
+function triggerEvolveFX() {
+  els.plantWrap.classList.remove('evolving');
+  void els.plantWrap.offsetWidth; // force reflow
+  els.plantWrap.classList.add('evolving');
+}
+
+// --- Evolve ---
+function tryEvolve() {
+  const cur = STAGES[state.stage - 1];
+  while (state.xp >= cur.threshold && state.stage < STAGES.length) {
+    state.xp -= cur.threshold;
+    state.stage += 1;
+    const ns = STAGES[state.stage - 1];
+    if (ns.blessing) {
+      state.idleRate += ns.blessing.idle;
+      state.clickValue += ns.blessing.click;
+      state.unlocked.push(ns.id);
+    }
+    setStageVisual(state.stage);
+    triggerEvolveFX();
+    renderBlessings();
+    if (state.stage === STAGES.length && !state.won) {
+      state.won = true;
+      setTimeout(() => els.winOverlay.classList.add('show'), 1500);
+    }
+  }
+}
+
+// --- Render HUD ---
+function render() {
+  const cur = STAGES[state.stage - 1];
+  const threshold = cur.threshold;
+  const pct = threshold === Infinity ? 100 : Math.min(100, (state.xp / threshold) * 100);
+  els.fill.style.width = pct + '%';
+  els.progressText.textContent = threshold === Infinity
+    ? `${fmt(state.xp)} · MAX`
+    : `${fmt(state.xp)} / ${fmt(threshold)}`;
+  els.clickVal.textContent = fmt(state.clickValue);
+  els.idleVal.textContent = fmt(state.idleRate);
+  els.statXp.textContent = fmt(state.xp);
+  els.statClicks.textContent = state.totalClicks.toLocaleString();
+}
+
+// --- Click handler ---
+function handleClick(evt) {
+  if (state.won) return;
+  state.xp += state.clickValue;
+  state.totalClicks += 1;
+  spawnDrop(evt);
+  tryEvolve();
+  render();
+}
+
+// Visual drop particle
+function spawnDrop(evt) {
+  const rect = els.plantArea.getBoundingClientRect();
+  const x = (evt.clientX || (rect.left + rect.width / 2)) - rect.left;
+  const y = (evt.clientY || (rect.top + rect.height / 2)) - rect.top;
+  const drop = document.createElement('div');
+  drop.className = 'drop';
+  drop.textContent = '💧';
+  drop.style.left = x + 'px';
+  drop.style.top = y + 'px';
+  els.plantArea.appendChild(drop);
+  setTimeout(() => drop.remove(), 900);
+}
+
+// --- Idle tick ---
+setInterval(() => {
+  if (state.won) return;
+  if (state.idleRate > 0) {
+    state.xp += state.idleRate / 10;  // 10 Hz
+    tryEvolve();
+    render();
+  }
+}, 100);
+
+// --- Auto-water (spacebar hold) ---
+let spaceHeld = false, autoTimer = null;
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !spaceHeld) {
+    spaceHeld = true;
+    e.preventDefault();
+    autoTimer = setInterval(() => handleClick({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }), 80);
+  }
+  if (e.code === 'KeyR') reset();
+});
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') { spaceHeld = false; clearInterval(autoTimer); }
+});
+
+function reset() {
+  state.stage = 1; state.xp = 0; state.clickValue = 1; state.idleRate = 0;
+  state.totalClicks = 0; state.unlocked = []; state.won = false;
+  setStageVisual(1);
+  els.winOverlay.classList.remove('show');
+  renderBlessings();
+  render();
+}
+
+// --- Init ---
+els.plantArea.addEventListener('click', handleClick);
+renderBlessings();
+setStageVisual(1);
+render();
+
+// Fallback: if a stage image fails to load, show placeholder color
+els.plantWrap.querySelectorAll('img').forEach(img => {
+  img.addEventListener('error', () => {
+    img.style.background = 'linear-gradient(135deg, #2e7a3f, #4a3220)';
+    img.style.opacity = img.classList.contains('active') ? '0.3' : '0';
+  });
+});
+</script>
+</body>
+</html>
