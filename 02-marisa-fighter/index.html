@@ -173,6 +173,15 @@
   <button class="variant" data-variant="B">
     B · 4 联格生成 <small>1 strip → split</small>
   </button>
+  <button class="variant" data-variant="C_keyframe">
+    C · 骑士 8 帧 <small>pixel, keyframes only</small>
+  </button>
+  <button class="variant" data-variant="C_flow">
+    C + flow 补间 <small>8 → 32 frames</small>
+  </button>
+  <button class="variant" data-variant="C_xfade">
+    C + crossfade <small>baseline</small>
+  </button>
 </div>
 
 <div id="arena-wrap">
@@ -221,7 +230,15 @@ const SHARED_FRAMES = [
   { key: 'hurt',        file: '14_hurt.png',               label: 'hurt' },
 ];
 
-// Walk variants: each variant provides its own walk_1..walk_4.
+// Walk variants: each provides its own frame set. Can be 4 or more frames.
+function rangeFiles(dir, prefix, n, pad=1, start=1) {
+  const out = [];
+  for (let i = start; i < start + n; i++) {
+    out.push({ key: `walk_${i}`, file: `${dir}/${prefix}${String(i).padStart(pad, '0')}.png` });
+  }
+  return out;
+}
+
 const WALK_VARIANTS = {
   original: [
     { key: 'walk_1', file: 'sprites/04_walk_1.png' },
@@ -229,18 +246,23 @@ const WALK_VARIANTS = {
     { key: 'walk_3', file: 'sprites/06_walk_3.png' },
     { key: 'walk_4', file: 'sprites/07_walk_4.png' },
   ],
-  A: [
-    { key: 'walk_1', file: 'experiments/A_skeleton_cond/alpha/walk_1.png' },
-    { key: 'walk_2', file: 'experiments/A_skeleton_cond/alpha/walk_2.png' },
-    { key: 'walk_3', file: 'experiments/A_skeleton_cond/alpha/walk_3.png' },
-    { key: 'walk_4', file: 'experiments/A_skeleton_cond/alpha/walk_4.png' },
-  ],
-  B: [
-    { key: 'walk_1', file: 'experiments/B_sprite_strip/alpha/walk_1.png' },
-    { key: 'walk_2', file: 'experiments/B_sprite_strip/alpha/walk_2.png' },
-    { key: 'walk_3', file: 'experiments/B_sprite_strip/alpha/walk_3.png' },
-    { key: 'walk_4', file: 'experiments/B_sprite_strip/alpha/walk_4.png' },
-  ],
+  A: rangeFiles('experiments/A_skeleton_cond/alpha', 'walk_', 4),
+  B: rangeFiles('experiments/B_sprite_strip/alpha', 'walk_', 4),
+  C_keyframe: rangeFiles('experiments/C_knight_pixel/frames_raw', 'walk_', 8),
+  C_flow: (() => {
+    const out = [];
+    for (let i = 0; i < 32; i++) {
+      out.push({ key: `walk_${i+1}`, file: `experiments/C_knight_pixel/interp_flow/frame_${String(i).padStart(3,'0')}.png` });
+    }
+    return out;
+  })(),
+  C_xfade: (() => {
+    const out = [];
+    for (let i = 0; i < 32; i++) {
+      out.push({ key: `walk_${i+1}`, file: `experiments/C_knight_pixel/interp_crossfade/frame_${String(i).padStart(3,'0')}.png` });
+    }
+    return out;
+  })(),
 };
 
 // All frame files for the gallery view.
@@ -264,11 +286,14 @@ function loadImg(src) {
 // --- Animation data ---
 const ANIM = {
   idle:   { frames: ['idle_a', 'idle_b'],             fps: 1.5,  loop: true },
-  walk:   { frames: ['walk_1','walk_2','walk_3','walk_4'], fps: 8, loop: true },
+  walk:   { frames: ['walk_1','walk_2','walk_3','walk_4'], fps: 8, loop: true },  // dynamic, rebuilt by setWalkVariant
   slash:  { frames: ['slash_1','slash_2','slash_3'],  fps: 8,   loop: false, frameDurs: [180, 140, 260], recovers_in: 620 },
   spark:  { frames: ['spark_1','spark_2','spark_3'],  fps: 2,    loop: false, frameDurs: [500, 1200, 600], recovers_in: 2350 },
   hurt:   { frames: ['hurt'],                         fps: 1,    loop: false, recovers_in: 600 },
 };
+
+// Per-variant walk fps: denser interpolated sets play faster to keep cycle duration roughly constant.
+const WALK_FPS = { original: 8, A: 8, B: 8, C_keyframe: 12, C_flow: 32, C_xfade: 32 };
 
 // --- State ---
 const GAME_W = 1920, GAME_H = 1080;
@@ -514,16 +539,22 @@ document.getElementById('gallery-btn').addEventListener('click', () => {
 // --- Variant swap ---
 async function loadWalkVariant(name) {
   currentVariant = name;
-  // Update tab UI
   document.querySelectorAll('.variant').forEach(b => {
     b.classList.toggle('active', b.dataset.variant === name);
   });
-  // Load the 4 walk frames for this variant
   const frames = WALK_VARIANTS[name];
+  // Clear old walk_* keys first so stale ones don't linger
+  Object.keys(sprites).filter(k => k.startsWith('walk_')).forEach(k => delete sprites[k]);
   await Promise.all(frames.map(async (f) => {
     const img = await loadImg(f.file);
     sprites[f.key] = img;
   }));
+  // Rebuild the walk animation's frame list and fps for this variant.
+  ANIM.walk.frames = frames.map(f => f.key);
+  ANIM.walk.fps = WALK_FPS[name] || 8;
+  // Reset frame index so we don't overshoot when switching to a shorter set.
+  state.frameIdx = 0;
+  state.frameStartTime = performance.now();
 }
 
 document.querySelectorAll('.variant').forEach(btn => {

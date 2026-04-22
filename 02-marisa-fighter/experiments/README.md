@@ -72,3 +72,89 @@ See each variant's full 4-frame set in:
 ## Cost impact on overall budget
 
 Experiment total: **$0.33**. Running total across all demos: **$1.83 + $0.33 = $2.16**. Well within $10 budget.
+
+---
+
+# Part 2 — "Can gpt-image-2 deliver a fluid 2D action game?"
+
+Follow-up question from the user: if even B doesn't fully deliver a walk cycle, what's the real ceiling? Can pure image-gen produce production-quality fluid animation, maybe with denser keyframes + post-processing?
+
+This part tests **C** — a new character (chibi knight girl from a reference image), MapleStory-style pixel-art, 8-frame walk strip, plus two kinds of post-processing interpolation (optical flow + crossfade).
+
+## Setup
+
+### C_keyframe: 8-frame walk strip, pixel art
+- Reference: a chibi knight source image (red cape, silver plate armor, pigtails). Used as identity reference via `images/edits` with prompt asking for MapleStory-style pixel-art rendering.
+- Walk strip: one `images/edits` call, 2048×1024 output, prompted for 8-panel walk cycle with detailed per-panel pose descriptions (contact / passing / contact / passing, mirrored).
+- **Low quality tier** — pixel art doesn't need detail density. Total cost: **$0.0342** (10× cheaper than the Marisa medium-quality equivalent).
+
+### C_flow: OpenCV Farneback optical flow + bilateral warp-and-blend
+- Input: the 8 keyframes from C_keyframe.
+- Method: between each consecutive pair, compute dense optical flow both directions, warp each endpoint by fractional t, blend.
+- Output: 32 total frames (8 keyframes + 3 intermediates per gap + 3 closing the loop).
+
+### C_xfade: naive alpha crossfade baseline (no motion warping)
+- Control group — just blends a and b at each t. Double-images. Expected to be worse than flow; included for comparison.
+
+## Results
+
+### Keyframe quality
+
+The 8-frame knight strip produced **less pose differentiation than Marisa's 4-frame strip**. The front-facing chibi reference anchored the model heavily into "front-view idle" mode — all 8 panels show the knight mostly front-facing with subtle sword-angle variations, not a clear side-view walk. **Finding: the reference's pose/orientation dominates the strip's pose distribution**, which is a new constraint to design around.
+
+### Interpolation quality (flow vs crossfade)
+
+| Method | Artifact profile | Reads as walking? |
+|---|---|---|
+| **Keyframes-only (C_keyframe)** | Clean individual frames, abrupt pose changes every ~83ms at 12 fps | Marginal — looks like "stepping in place" more than walking |
+| **Optical flow (C_flow)** | Armor/cape distortion on fast-moving parts; slight magenta fringing at silhouette; occasional ghost lines | Smoother motion but character geometry warps unnaturally on limbs |
+| **Crossfade (C_xfade)** | Double-image ghosting on sword, shield, cape at every intermediate frame | Visibly bad — classic "blend" artifact |
+
+Neither post-processing method **rescues** the animation. Both produce frames that no shipping game would use.
+
+### Cost breakdown (C only)
+
+| Step | Cost | Time |
+|---|---|---|
+| Knight pixel reference | $0.02 | 43s |
+| 8-frame walk strip | $0.015 | 40s |
+| Interpolation (flow + crossfade, local CPU) | $0 | <10s |
+| **Total C** | **$0.034** | |
+
+Running project total: **$2.16 + $0.034 = $2.20**. (Also installed torch-cpu + cloned RIFE repo — never used RIFE because the optical-flow baseline already answered the question.)
+
+## The real conclusion
+
+**Frame interpolation does not save gpt-image-2's walk cycle.** Two independent reasons:
+
+1. **Pixel art is discrete motion** — legs jump from pose A to pose B, not through continuous in-between positions. Optical flow + blend is designed for real-camera video with smooth motion. On pixel sprites it produces either warped armor (flow) or double images (crossfade). RIFE would do somewhat better but not categorically better because it's fundamentally the same paradigm.
+
+2. **Reference images anchor the entire batch to one viewpoint** — the knight strip turned out front-facing because the source was front-facing. The model doesn't re-project the character to side view just because you ask nicely.
+
+### What actually would make a fluid 2D action game with gpt-image-2
+
+Based on this run, the recipe is:
+
+| Asset type | Tool |
+|---|---|
+| Portraits / boss art / splash screens | ✅ **gpt-image-2** — revolutionary identity preservation |
+| Keyframe illustrations (extreme poses) | ✅ **gpt-image-2 via strip generation** |
+| Backgrounds / scenery / item icons | ✅ **gpt-image-2** — its strongest use case |
+| VFX frames (explosions, hits, auras) | ✅ **gpt-image-2** |
+| Walk / run / idle cycles | ❌ NOT gpt-image-2 alone. Use **Live2D / Spine / DragonBones** to rig the keyframe character with bones and animate the rig. 10× more efficient than generating each frame. |
+| Smooth in-between frames | ❌ Frame interpolation (RIFE, flow, crossfade) doesn't work on sprite pose changes. Stick with rigging. |
+
+**Alternative end-to-end path worth testing**: gpt-image-2 generates the character → text/image-to-3D model (Tripo / Rodin / Meshy) → rig + animate in 3D → render back out to 2D sprites. Skips the animation problem entirely at the cost of adding a 3D step. Probably the 2026 indie-game answer.
+
+### Artifacts shown in the demo
+
+Open the live demo and flip through the 6 tabs:
+- `原版` — the original chain-edit 4 frames (baseline, doesn't walk)
+- `A · 骨架条件` — frame 1 commits to pose, frames 2-4 fuse
+- `B · 4 联格生成` — best pure-gpt-image-2 result, reads as step-stand-step
+- `C · 骑士 8 帧` — 8-frame keyframe knight, pixel style
+- `C + flow 补间` — flow interpolation, watch the armor warp
+- `C + crossfade` — crossfade baseline, watch the ghosting
+
+Play each variant by holding arrow keys.
+
