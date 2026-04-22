@@ -398,8 +398,12 @@ class PuppetRig {
   }
 
   render(ctx, animName, t, opts = {}) {
-    const { x = 0, y = 0, facing = 1, scale = 1, debug = false } = opts;
+    const { x = 0, y = 0, facing = 1, scale = 1, debug = false, poseOverrides = null } = opts;
     const pose = this.poseAt(animName, t);
+    // Layer: caller's pose overrides win over keyframe values (for secondary motion, IK, etc.)
+    if (poseOverrides) {
+      for (const [k, v] of Object.entries(poseOverrides)) pose[k] = v;
+    }
     const cache = {};
     ctx.save();
     ctx.translate(x, y);
@@ -666,13 +670,13 @@ async function loadKnightRig() {
 let knightRigE = null;
 async function loadKnightRigE() {
   if (knightRigE) return knightRigE;
-  // v2: auto-computed offsets from detected joints + normalized per-part scales
-  const skelData = await fetch('experiments/E_part_gen/skeleton_e2.json').then(r => r.json());
-  // Load unique sprite files once, reuse per-bone by 'sprite' field
+  // v3: E3 parts generated with explicit per-part pixel sizes + auto pipeline
+  const skelData = await fetch('experiments/E_part_gen/skeleton_e3.json').then(r => r.json());
+  const partsDir = skelData.parts_dir || 'experiments/E_part_gen/parts_e3';
   const spriteNames = [...new Set(skelData.skeleton.filter(b => b.sprite).map(b => b.sprite))];
   const spriteImgs = {};
   await Promise.all(spriteNames.map(async n => {
-    spriteImgs[n] = await loadImg(`experiments/E_part_gen/parts_e1/${n}.png`);
+    spriteImgs[n] = await loadImg(`${partsDir}/${n}.png`);
   }));
   // Build a sprites map keyed by BONE name (each bone may reuse a sprite)
   const boneSprites = {};
@@ -829,9 +833,8 @@ function resetCombat() {
 
 function physics(dtMs) {
   if (!state.onGround) {
-    state.vy += GRAVITY * (dtMs / 16.67);   // gravity per 60fps-equivalent frame
+    state.vy += GRAVITY * (dtMs / 16.67);
     state.y += state.vy * (dtMs / 16.67);
-    // Switch jump -> fall when velocity turns positive
     if (state.vy > 0 && state.animName === 'jump') setAnim('fall', false);
     if (state.y >= GROUND_Y) {
       state.y = GROUND_Y;
@@ -841,7 +844,22 @@ function physics(dtMs) {
       state.animEndTime = performance.now() + 250;
     }
   }
+  // Cape secondary motion (verlet-style spring-drag)
+  const prevX = capePhys.prevPlayerX;
+  capePhys.prevPlayerX = state.x;
+  const vx = (state.x - prevX) * (16.67 / Math.max(1, dtMs));   // player velocity px/frame
+  // Cape trails BEHIND motion: if moving right (+), cape swings LEFT (-) and vice versa
+  // Cape angle convention: positive = rotates clockwise (swings right in world coords if character faces right)
+  // We want cape to lag: if character moves forward (+facing direction), cape swings backward (−facing direction)
+  const dragTorque = -vx * state.facing * 1.8;
+  const springTorque = -capePhys.angle * 0.18;            // pulls back to neutral
+  const gravityTorque = Math.sin(capePhys.angle * Math.PI / 180) * 1.2;  // gravity pulls down
+  capePhys.vel += (springTorque + dragTorque + gravityTorque) * (dtMs / 16.67);
+  capePhys.vel *= 0.88;   // damping
+  capePhys.angle += capePhys.vel * (dtMs / 16.67);
+  capePhys.angle = Math.max(-55, Math.min(55, capePhys.angle));
 }
+const capePhys = { angle: 0, vel: 0, prevPlayerX: 500 };
 
 // --- Drawing ---
 const dummyScene = {
@@ -921,15 +939,18 @@ function drawMarisa() {
     else if (state.animName === 'fall') rigAnim = 'jump_fall';
     else if (state.animName === 'land') rigAnim = 'jump_land';
     const localT = (performance.now() - state.animStartTime) / 1000;
-    // E rig v2 normalizes parts to TARGET_H=800 so its assembled character is
-    // ~800 px tall. Render at scale to get ~540 on screen.
     const SCALE = currentVariant === 'E_rig' ? 0.70 : 0.65;
-    // Distance from pelvis origin to feet in the v2 rig's local coords =
-    // thigh.height + shin.height ≈ 176 + 176 = 352 (target pixels).
     const FEET_TO_PELVIS_SCALED = currentVariant === 'E_rig' ? Math.round(352 * 0.70) : 188;
     const pelvisScreenY = state.y - FEET_TO_PELVIS_SCALED;
+    // Secondary motion: cape physics angle (relative to facing direction)
+    const overrides = {
+      cape: (currentVariant === 'E_rig' || currentVariant === 'D_rig')
+        ? capePhys.angle * state.facing   // flip sign on left-facing so cape still trails behind
+        : undefined,
+    };
     rig.render(ctx, rigAnim, localT, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
+      poseOverrides: overrides,
     });
     return;
   }

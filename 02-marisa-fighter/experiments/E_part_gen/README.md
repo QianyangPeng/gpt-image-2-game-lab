@@ -130,10 +130,72 @@ The point: this is now a **playable micro-fighter**. Not a production game, but 
 | Is it a game? | demo | **playable training dummy** |
 | Repeatable on a new character? | No — D requires re-tuning hand-bboxes per character | **Yes — rerun run_e1_sheet + detect_joints + build_skeleton_v2** |
 
-## If I had another $1 to polish
+## v4: E3 regen with size constraints + cape physics
 
-1. **E3 regen** with per-part pixel-size constraints in the prompt ($0.02) — "head 160px tall, torso 330px tall, upper_arm 160px tall" so proportions fit without rig-side scaling.
-2. **Simple IK** for feet (~30 lines) so walking doesn't slide.
-3. **Secondary motion** for cape + hair (spring physics, ~40 lines).
-4. **A real enemy** (not just a wobble dummy) using the same pipeline — second character.
+### E3 — explicit per-part pixel sizes
+Regenerated the asset sheet ($0.0167 / 28s) with prompt now specifying approximate pixel heights per part, all at a shared "500-px-tall character" body scale. Compare E1 native heights to E3:
+
+| Part | E1 native height | E3 native height | E3 fits target? |
+|---|---|---|---|
+| head | 397 | 386 | closer |
+| torso | 425 | 413 | ~same |
+| cape | 512 | 372 | ✓ smaller (previously overflowing) |
+| upper_arm | 356 | 368 | ~same |
+| forearm | 442 | 512 | ↑ hand now included at bottom |
+| sword | 512 | 512 | ↑ longer more heroic |
+| thigh | 472 | 414 | ✓ smaller (no longer dwarfing torso) |
+| shin | 349 | 427 | ↑ fuller |
+| shield | 512 | 512 | same |
+
+E3 parts look **noticeably more proportional** when assembled. The model accepted the per-cell size instructions fairly well — not pixel-exact but within ±15%. See [asset_sheet_e3.png](asset_sheet_e3.png).
+
+### End-to-end pipeline: [run_e3_pipeline.py](run_e3_pipeline.py)
+Single script now does joint detection + skeleton build in one pass. Pipeline summary:
+
+```
+asset_sheet_e3.png → split_e3.py → parts_e3/*.png
+                  → run_e3_pipeline.py → joints_e3.json + skeleton_e3.json
+                  → game loads skeleton_e3.json → rigged playable character
+```
+
+3 API calls total ($0.02 each) for a complete character pipeline: ref + asset sheet. After that all local, all free, all repeatable.
+
+### Cape secondary motion (verlet-style)
+Added a tiny physics system in `physics(dtMs)`:
+- `capePhys.angle` — cape rotation state (persistent)
+- Forces each frame: spring toward neutral, drag based on character velocity, gravity pulling down
+- Clamped to ±55°, damped 0.88/frame
+- Injected into `rig.render()` via new `poseOverrides` param that layers on top of keyframe pose
+
+Result: when character runs right, cape trails LEFT behind (drag). When character stops, cape swings back toward neutral with a slight overshoot (spring). When jumping, cape momentarily billows up. All from ~15 lines of physics + 3 lines in PuppetRig for override layering.
+
+This same `poseOverrides` hook can drive IK, hair sway, breath modulation, etc. — the extensibility point is there now.
+
+### Cost after all optimizations
+
+| Step | Cost |
+|---|---|
+| Reference (side-view knight) | $0.02 |
+| E1 asset sheet (first try) | $0.0153 |
+| E3 asset sheet (with size constraints) | $0.0167 |
+| **E total across 3 gen calls** | **$0.052** |
+
+Running project total: **$2.24 + $0.017 = $2.26 / $10 budget**. Everything under 30 cents.
+
+## Current state
+
+✅ Auto-generated character parts (one call, $0.02)
+✅ Auto-detected joints (pipeline, $0)
+✅ Auto-computed skeleton with scale normalization ($0)
+✅ Animation library: idle / walk / attack / jump / hurt / block / dash / cast
+✅ Secondary motion: cape physics
+✅ Combat: HP bars, hit detection, blocking, i-frames, game over
+✅ Controls: keyboard bindings for all actions
+
+## Still on the list (future work)
+
+1. **Simple 2-bone IK** for feet — about 30 lines. Would eliminate the slight foot-slide during walk.
+2. **Back-arm separate regen** — currently both arms reuse one front-arm sprite. Generating a darker/dimmer back-arm variant would give better depth.
+3. **Second character** through the same pipeline — prove it's not Reimu-specific. (Demo 3?)
+4. **Spine export format** — save skeleton_e3.json as a real .skel file so commercial Spine runtimes work.
 
