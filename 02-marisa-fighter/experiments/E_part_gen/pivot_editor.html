@@ -2,66 +2,103 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<title>Pivot Editor — click to set joints on each part</title>
+<title>Pivot Editor — click joints, see rig assemble in real time</title>
 <style>
   body { margin: 0; background: #1a1020; color: #eee; font-family: system-ui, sans-serif; padding: 16px; }
-  h1 { font-size: 16px; letter-spacing: 2px; color: #f9d36c; margin: 0 0 8px; }
-  .help { font-size: 12px; color: #aaa; margin-bottom: 16px; }
+  h1 { font-size: 16px; letter-spacing: 2px; color: #f9d36c; margin: 0 0 6px; }
+  .help { font-size: 12px; color: #aaa; margin-bottom: 12px; line-height: 1.6; }
   .help kbd { background: #302040; padding: 1px 5px; border-radius: 3px; }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 1200px; }
-  .part {
-    background: #241838; border: 1px solid #3f305a; border-radius: 8px; padding: 10px;
-    display: flex; flex-direction: column; gap: 6px;
+  .help b { color: #f9d36c; }
+
+  #layout {
+    display: grid; grid-template-columns: 1fr 420px; gap: 16px; align-items: start;
   }
-  .part .name { font-weight: bold; color: #f9d36c; font-size: 13px; letter-spacing: 1px; }
-  .part .joints { font-size: 11px; color: #888; font-family: ui-monospace, monospace; }
-  .part .joints b { color: #eee; }
+  #parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .part {
+    background: #241838; border: 1px solid #3f305a; border-radius: 8px; padding: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .part .name { font-weight: bold; color: #f9d36c; font-size: 12px; letter-spacing: 1px; }
+  .part .joints { font-size: 10px; color: #888; font-family: ui-monospace, monospace; word-break: break-all; }
   .canvas-wrap {
     position: relative;
     background: repeating-conic-gradient(#2a2240 0 25%, #241d35 0 50%);
-    background-size: 16px 16px;
+    background-size: 14px 14px;
     border: 1px solid #3f305a; border-radius: 4px;
     cursor: crosshair;
   }
   .canvas-wrap canvas { display: block; max-width: 100%; height: auto; }
-  .mode-select { display: flex; gap: 4px; margin-bottom: 4px; }
+  .mode-select { display: flex; gap: 3px; }
   .mode-select button {
     flex: 1; background: #2a1a40; color: #ccc; border: 1px solid #4a3060;
-    padding: 4px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;
+    padding: 3px 5px; border-radius: 3px; font-size: 10px; cursor: pointer;
   }
   .mode-select button.active { background: #5a3090; color: #fff; border-color: #8b5cf6; }
-  .actions { display: flex; gap: 8px; margin-top: 16px; align-items: center; }
-  .actions button {
-    background: #4c9d5a; color: #fff; border: 0; padding: 8px 16px;
-    border-radius: 6px; font-size: 13px; cursor: pointer; letter-spacing: 1px;
+
+  /* Preview panel */
+  #preview-panel {
+    position: sticky; top: 16px;
+    background: #140a20; border: 1px solid #3f305a; border-radius: 8px; padding: 12px;
   }
-  .actions button:hover { background: #5ab066; }
-  .actions .copy { background: #5a3090; }
-  .actions .copy:hover { background: #7040b0; }
+  #preview-panel h2 {
+    font-size: 12px; letter-spacing: 2px; color: #f9d36c; margin: 0 0 8px;
+  }
+  #preview-canvas {
+    width: 100%; height: 600px; background: linear-gradient(to bottom, #2a1a4a, #1a1024);
+    border: 1px solid #3f305a; border-radius: 4px;
+    image-rendering: pixelated;
+  }
+  #preview-controls {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0;
+    font-size: 11px;
+  }
+  #preview-controls label { color: #aaa; display: flex; align-items: center; gap: 4px; }
+  #preview-controls input[type=range] { flex: 1; }
+  #preview-controls input[type=checkbox] { accent-color: #f9d36c; }
+
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .actions button {
+    background: #4c9d5a; color: #fff; border: 0; padding: 7px 14px;
+    border-radius: 5px; font-size: 12px; cursor: pointer; letter-spacing: 1px;
+  }
+  .actions button:hover { filter: brightness(1.1); }
+  .actions .reset { background: #5a3090; }
+  .actions .copy { background: #9060c0; }
   textarea {
-    width: 100%; height: 180px; background: #0a0514; color: #eee; border: 1px solid #3f305a;
-    font-family: ui-monospace, monospace; font-size: 11px; padding: 8px; border-radius: 4px;
-    margin-top: 8px;
+    width: 100%; height: 140px; background: #0a0514; color: #eee; border: 1px solid #3f305a;
+    font-family: ui-monospace, monospace; font-size: 10px; padding: 8px; border-radius: 4px;
+    margin-top: 8px; resize: vertical;
   }
 </style>
 </head>
 <body>
-<h1>PIVOT EDITOR — 点击部件图上的关节位置</h1>
+<h1>PIVOT EDITOR — 实时预览</h1>
 <div class="help">
-  每个部件选择要设置的关节类型（<kbd>top</kbd> / <kbd>bottom</kbd> / torso 有额外 <kbd>L_shoulder</kbd> / <kbd>R_shoulder</kbd>），
-  然后直接在图上点击 = 那一点成为该关节。可以多次点击覆盖。按 <kbd>Save JSON</kbd> 把所有 pivots 下载或复制到 clipboard。
+  左边选部件里要编辑的关节（<kbd>top</kbd>/<kbd>bottom</kbd>/<kbd>L_shoulder</kbd>/<kbd>R_shoulder</kbd>），在图上点一下就把该关节移到那个像素。
+  右边会实时把所有部件按你设定的关节组装。关节对齐 → 角色身体接合；关节歪 → 能立刻看到脱节。
+  点完按 <b>📋 导出</b> 给我 pivots.json，我用它重建 skeleton。
 </div>
-<div class="grid" id="parts-grid"></div>
 
-<div class="actions">
-  <button id="save">💾 导出 pivots.json（复制到剪贴板）</button>
-  <button id="toggle-sizes">显示尺寸</button>
+<div id="layout">
+  <div id="parts-grid"></div>
+  <div id="preview-panel">
+    <h2>🛡 实时组装预览</h2>
+    <canvas id="preview-canvas" width="400" height="600"></canvas>
+    <div id="preview-controls">
+      <label><input type="checkbox" id="show-joints" checked> 显示关节点</label>
+      <label><input type="checkbox" id="show-bones" checked> 显示骨骼线</label>
+    </div>
+    <div class="actions">
+      <button class="copy" id="save">📋 导出 pivots.json</button>
+      <button class="reset" id="reset">↺ 重置默认</button>
+    </div>
+    <textarea id="json-output" placeholder="(exported JSON)"></textarea>
+  </div>
 </div>
-<textarea id="json-output" placeholder="(output will appear here)"></textarea>
 
 <script>
 const PARTS = [
-  { name: 'head',      joints: ['top'] },   // only bottom-attach (neck)
+  { name: 'head',      joints: ['top'] },
   { name: 'torso',     joints: ['top', 'bottom', 'left_shoulder', 'right_shoulder'] },
   { name: 'cape',      joints: ['top'] },
   { name: 'upper_arm', joints: ['top', 'bottom'] },
@@ -84,89 +121,239 @@ const DEFAULTS = {
   shield:    { top: [145, 250] },
 };
 
-// Which joint key is in "active editing mode" per part
 const activeJoint = {};
 PARTS.forEach(p => activeJoint[p.name] = p.joints[0]);
-
-const pivots = JSON.parse(JSON.stringify(DEFAULTS));
+let pivots = JSON.parse(JSON.stringify(DEFAULTS));
 
 const JOINT_COLORS = {
-  top:            [249, 211, 108],    // gold
-  bottom:         [100, 200, 250],    // cyan
-  left_shoulder:  [255, 100, 150],    // pink
-  right_shoulder: [100, 255, 150],    // green
+  top:            '#f9d36c', bottom:         '#64c8fa',
+  left_shoulder:  '#ff6496', right_shoulder: '#64ff96',
 };
 
-function render() {
+// Pre-load all sprite images once
+const spriteImgs = {};
+async function loadSprites() {
+  await Promise.all(PARTS.map(async p => {
+    spriteImgs[p.name] = await new Promise(res => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.src = `parts_e3/${p.name}.png`;
+    });
+  }));
+}
+
+function drawJointsOn(ctx, cv, partName, scale, offsetX, offsetY) {
+  for (const [joint, [px, py]] of Object.entries(pivots[partName] || {})) {
+    const color = JOINT_COLORS[joint] || '#fff';
+    const sx = (offsetX || 0) + px * scale;
+    const sy = (offsetY || 0) + py * scale;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(sx, sy, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(sx, sy, 5.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+// --- Build grid of part editors ---
+function renderGrid() {
   const grid = document.getElementById('parts-grid');
   grid.innerHTML = '';
-  PARTS.forEach(partDef => {
+  for (const partDef of PARTS) {
     const container = document.createElement('div');
     container.className = 'part';
+    const jointSpans = Object.entries(pivots[partDef.name] || {}).map(([jn, pt]) =>
+      `<span style="color:${JOINT_COLORS[jn]}">${jn}</span>=(${pt[0]},${pt[1]})`
+    ).join(' · ');
     container.innerHTML = `
       <div class="name">${partDef.name}</div>
       <div class="mode-select">
-        ${partDef.joints.map(j => `<button data-part="${partDef.name}" data-joint="${j}" class="${j === activeJoint[partDef.name] ? 'active' : ''}">${j}</button>`).join('')}
+        ${partDef.joints.map(j => `<button data-part="${partDef.name}" data-joint="${j}" class="${j === activeJoint[partDef.name] ? 'active' : ''}" style="${j === activeJoint[partDef.name] ? 'box-shadow: inset 0 0 0 1px ' + JOINT_COLORS[j] : ''}">${j}</button>`).join('')}
       </div>
       <div class="canvas-wrap" data-part="${partDef.name}">
         <canvas id="cv-${partDef.name}"></canvas>
       </div>
-      <div class="joints" id="joints-${partDef.name}"></div>
+      <div class="joints">${jointSpans}</div>
     `;
     grid.appendChild(container);
 
-    // Wire mode-select buttons
+    // Mode select
     container.querySelectorAll('.mode-select button').forEach(btn => {
       btn.addEventListener('click', () => {
         activeJoint[btn.dataset.part] = btn.dataset.joint;
-        render();
+        renderGrid();
       });
     });
 
-    // Load image + wire click-to-set-pivot
-    const img = new Image();
-    img.onload = () => {
-      const cv = document.getElementById(`cv-${partDef.name}`);
-      const maxDim = 300;
-      const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
-      cv.width = img.width * scale;
-      cv.height = img.height * scale;
-      const ctx = cv.getContext('2d');
-      ctx.drawImage(img, 0, 0, cv.width, cv.height);
-      // Draw each pivot as a colored dot
-      for (const [jointName, [px, py]] of Object.entries(pivots[partDef.name] || {})) {
-        const [r, g, b] = JOINT_COLORS[jointName] || [255, 255, 255];
-        const sx = px * scale;
-        const sy = py * scale;
-        ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(sx, sy, 7, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
+    // Part canvas
+    const img = spriteImgs[partDef.name];
+    if (!img) continue;
+    const cv = document.getElementById(`cv-${partDef.name}`);
+    const maxDim = 240;
+    const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+    cv.width = img.width * scale;
+    cv.height = img.height * scale;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    drawJointsOn(ctx, cv, partDef.name, scale);
+
+    // Click = set pivot
+    cv.addEventListener('click', (e) => {
+      const rect = cv.getBoundingClientRect();
+      const px = Math.round((e.clientX - rect.left) / rect.width * img.width);
+      const py = Math.round((e.clientY - rect.top) / rect.height * img.height);
+      const joint = activeJoint[partDef.name];
+      pivots[partDef.name] = pivots[partDef.name] || {};
+      pivots[partDef.name][joint] = [px, py];
+      renderGrid();
+      renderPreview();
+    });
+  }
+}
+
+// --- Live preview: assemble character from current pivots ---
+// Rest-pose bone hierarchy. For each bone:
+//   parent: bone name or null
+//   sprite: sprite key (PARTS entry name, or null for virtual root)
+//   pivot_key: which joint-keyword on THIS sprite is the bone origin
+//   attach_key: which joint on PARENT sprite this bone attaches to
+//   z: render order
+const SKELETON = [
+  { name: 'pelvis',          parent: null,    sprite: null,        pivot_key: null,    attach_key: null,           z: 2 },
+
+  { name: 'cape',            parent: 'torso', sprite: 'cape',      pivot_key: 'top',   attach_key: 'top',          z: 0 },
+  { name: 'back_upper_arm',  parent: 'torso', sprite: 'upper_arm', pivot_key: 'top',   attach_key: 'left_shoulder',z: 1 },
+  { name: 'back_forearm',    parent: 'back_upper_arm', sprite: 'forearm', pivot_key: 'top', attach_key: 'bottom',  z: 1 },
+  { name: 'shield',          parent: 'back_forearm',   sprite: 'shield',  pivot_key: 'top', attach_key: 'bottom',  z: 1 },
+  { name: 'back_thigh',      parent: 'pelvis', sprite: 'thigh',    pivot_key: 'top',   attach_key: null,           z: 1, offset: [-35, 0] },
+  { name: 'back_shin',       parent: 'back_thigh', sprite: 'shin', pivot_key: 'top',   attach_key: 'bottom',       z: 1 },
+
+  { name: 'torso',           parent: 'pelvis', sprite: 'torso',    pivot_key: 'bottom', attach_key: null,          z: 3, offset: [0, 0] },
+  { name: 'head',            parent: 'torso', sprite: 'head',      pivot_key: 'top',   attach_key: 'top',          z: 4 },
+
+  { name: 'front_thigh',     parent: 'pelvis', sprite: 'thigh',    pivot_key: 'top',   attach_key: null,           z: 5, offset: [35, 0] },
+  { name: 'front_shin',      parent: 'front_thigh', sprite: 'shin', pivot_key: 'top',  attach_key: 'bottom',       z: 5 },
+  { name: 'front_upper_arm', parent: 'torso', sprite: 'upper_arm', pivot_key: 'top',   attach_key: 'right_shoulder', z: 6 },
+  { name: 'front_forearm',   parent: 'front_upper_arm', sprite: 'forearm', pivot_key: 'top', attach_key: 'bottom', z: 6 },
+  { name: 'sword',           parent: 'front_forearm',   sprite: 'sword',   pivot_key: 'top', attach_key: 'bottom', z: 6 },
+];
+
+function renderPreview() {
+  const cv = document.getElementById('preview-canvas');
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+
+  // Two-pass: first compute world origins with pelvis at (0,0), measure character bounds,
+  // then pick a scale so the whole thing fits in the canvas with margins.
+  const worldOrigin = { pelvis: [0, 0] };
+
+  // For sprite rendering, we need to know the SPRITE-LOCAL pivot coords.
+  // We work in native sprite pixel space (no scale, 1:1) to make pivots intuitive.
+  // Scale down assembled character if needed (for display).
+  // First compute assembled height and if it overflows canvas, scale.
+  const bonesByName = {};
+  for (const b of SKELETON) bonesByName[b.name] = b;
+
+  function resolve(boneName) {
+    if (worldOrigin[boneName]) return worldOrigin[boneName];
+    const b = bonesByName[boneName];
+    if (!b.parent) { worldOrigin[boneName] = [0, 0]; return [0, 0]; }
+    const parentOrigin = resolve(b.parent);
+    const parent = bonesByName[b.parent];
+    let offx = 0, offy = 0;
+    if (b.offset) {
+      offx = b.offset[0]; offy = b.offset[1];
+    } else if (b.attach_key && parent.sprite) {
+      const parentPivots = pivots[parent.sprite] || {};
+      const attachPt = parentPivots[b.attach_key];
+      const parentPivot = parentPivots[parent.pivot_key];
+      if (attachPt && parentPivot) {
+        offx = attachPt[0] - parentPivot[0];
+        offy = attachPt[1] - parentPivot[1];
       }
-
-      cv.addEventListener('click', (e) => {
-        const rect = cv.getBoundingClientRect();
-        const sx = (e.clientX - rect.left) / rect.width * cv.width;
-        const sy = (e.clientY - rect.top) / rect.height * cv.height;
-        const px = Math.round(sx / scale);
-        const py = Math.round(sy / scale);
-        const joint = activeJoint[partDef.name];
-        pivots[partDef.name] = pivots[partDef.name] || {};
-        pivots[partDef.name][joint] = [px, py];
-        render();  // re-render to show new dot
-      });
-    };
-    img.src = `parts_e3/${partDef.name}.png`;
-
-    // Render current joint list
-    const jointsDiv = document.getElementById(`joints-${partDef.name}`);
-    const parts = [];
-    for (const [jn, pt] of Object.entries(pivots[partDef.name] || {})) {
-      const [r, g, b] = JOINT_COLORS[jn] || [255,255,255];
-      parts.push(`<span style="color: rgb(${r},${g},${b})">${jn}</span>=<b>(${pt[0]}, ${pt[1]})</b>`);
     }
-    jointsDiv.innerHTML = parts.join(' · ');
-  });
+    const myOrigin = [parentOrigin[0] + offx, parentOrigin[1] + offy];
+    worldOrigin[boneName] = myOrigin;
+    return myOrigin;
+  }
+
+  for (const b of SKELETON) resolve(b.name);
+
+  // Compute character bounding box in pelvis-local coords
+  let minX = 0, maxX = 0, minY = 0, maxY = 0;
+  for (const b of SKELETON) {
+    if (!b.sprite) continue;
+    const img = spriteImgs[b.sprite];
+    if (!img) continue;
+    const piv = (pivots[b.sprite] || {})[b.pivot_key];
+    if (!piv) continue;
+    const [ox, oy] = worldOrigin[b.name];
+    const left = ox - piv[0], top = oy - piv[1];
+    const right = left + img.width, bottom = top + img.height;
+    if (left < minX) minX = left;
+    if (right > maxX) maxX = right;
+    if (top < minY) minY = top;
+    if (bottom > maxY) maxY = bottom;
+  }
+  const charW = maxX - minX, charH = maxY - minY;
+  const pad = 30;
+  const scale = Math.min(
+    (cv.width - 2 * pad) / charW,
+    (cv.height - 2 * pad) / charH,
+    1.0,
+  );
+  // Pan so bbox is centered
+  const panX = (cv.width  - charW * scale) / 2 - minX * scale;
+  const panY = (cv.height - charH * scale) / 2 - minY * scale;
+
+  // Ground line at estimated foot height
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(0, Math.round(panY + maxY * scale) + 2, cv.width, 1);
+
+  const sorted = [...SKELETON].sort((a, b) => a.z - b.z);
+  const showJoints = document.getElementById('show-joints').checked;
+  const showBones = document.getElementById('show-bones').checked;
+
+  function world(pt) { return [pt[0] * scale + panX, pt[1] * scale + panY]; }
+
+  for (const b of sorted) {
+    if (!b.sprite) continue;
+    const img = spriteImgs[b.sprite];
+    if (!img) continue;
+    const [ox, oy] = worldOrigin[b.name];
+    const piv = (pivots[b.sprite] || {})[b.pivot_key];
+    if (!piv) continue;
+    // Draw sprite with its pivot at (ox, oy) in rig-local, then scale + pan
+    const dx = (ox - piv[0]) * scale + panX;
+    const dy = (oy - piv[1]) * scale + panY;
+    ctx.drawImage(img, dx, dy, img.width * scale, img.height * scale);
+  }
+
+  if (showBones) {
+    ctx.strokeStyle = 'rgba(249, 211, 108, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    for (const b of SKELETON) {
+      if (!b.parent) continue;
+      const [px, py] = world(worldOrigin[b.parent]);
+      const [cx, cy] = world(worldOrigin[b.name]);
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, cy); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  if (showJoints) {
+    for (const b of SKELETON) {
+      const [x, y] = world(worldOrigin[b.name]);
+      ctx.fillStyle = b.sprite === null ? '#ff6496' : JOINT_COLORS[b.pivot_key] || '#fff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+    }
+  }
 }
 
 document.getElementById('save').addEventListener('click', async () => {
@@ -174,13 +361,25 @@ document.getElementById('save').addEventListener('click', async () => {
   document.getElementById('json-output').value = json;
   try {
     await navigator.clipboard.writeText(json);
-    alert('已复制到剪贴板！同时显示在下方文本框。');
+    alert('✅ 已复制到剪贴板。');
   } catch (e) {
-    alert('无法访问剪贴板，请手动复制下方文本框。');
+    alert('无法复制，请手动选中下方文本框。');
   }
 });
+document.getElementById('reset').addEventListener('click', () => {
+  if (confirm('恢复默认 pivots?')) {
+    pivots = JSON.parse(JSON.stringify(DEFAULTS));
+    renderGrid(); renderPreview();
+  }
+});
+document.getElementById('show-joints').addEventListener('change', renderPreview);
+document.getElementById('show-bones').addEventListener('change', renderPreview);
 
-render();
+(async () => {
+  await loadSprites();
+  renderGrid();
+  renderPreview();
+})();
 </script>
 </body>
 </html>
