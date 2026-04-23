@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Pivot Editor — click to set joints on each part</title>
+<style>
+  body { margin: 0; background: #1a1020; color: #eee; font-family: system-ui, sans-serif; padding: 16px; }
+  h1 { font-size: 16px; letter-spacing: 2px; color: #f9d36c; margin: 0 0 8px; }
+  .help { font-size: 12px; color: #aaa; margin-bottom: 16px; }
+  .help kbd { background: #302040; padding: 1px 5px; border-radius: 3px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 1200px; }
+  .part {
+    background: #241838; border: 1px solid #3f305a; border-radius: 8px; padding: 10px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .part .name { font-weight: bold; color: #f9d36c; font-size: 13px; letter-spacing: 1px; }
+  .part .joints { font-size: 11px; color: #888; font-family: ui-monospace, monospace; }
+  .part .joints b { color: #eee; }
+  .canvas-wrap {
+    position: relative;
+    background: repeating-conic-gradient(#2a2240 0 25%, #241d35 0 50%);
+    background-size: 16px 16px;
+    border: 1px solid #3f305a; border-radius: 4px;
+    cursor: crosshair;
+  }
+  .canvas-wrap canvas { display: block; max-width: 100%; height: auto; }
+  .mode-select { display: flex; gap: 4px; margin-bottom: 4px; }
+  .mode-select button {
+    flex: 1; background: #2a1a40; color: #ccc; border: 1px solid #4a3060;
+    padding: 4px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;
+  }
+  .mode-select button.active { background: #5a3090; color: #fff; border-color: #8b5cf6; }
+  .actions { display: flex; gap: 8px; margin-top: 16px; align-items: center; }
+  .actions button {
+    background: #4c9d5a; color: #fff; border: 0; padding: 8px 16px;
+    border-radius: 6px; font-size: 13px; cursor: pointer; letter-spacing: 1px;
+  }
+  .actions button:hover { background: #5ab066; }
+  .actions .copy { background: #5a3090; }
+  .actions .copy:hover { background: #7040b0; }
+  textarea {
+    width: 100%; height: 180px; background: #0a0514; color: #eee; border: 1px solid #3f305a;
+    font-family: ui-monospace, monospace; font-size: 11px; padding: 8px; border-radius: 4px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<h1>PIVOT EDITOR — 点击部件图上的关节位置</h1>
+<div class="help">
+  每个部件选择要设置的关节类型（<kbd>top</kbd> / <kbd>bottom</kbd> / torso 有额外 <kbd>L_shoulder</kbd> / <kbd>R_shoulder</kbd>），
+  然后直接在图上点击 = 那一点成为该关节。可以多次点击覆盖。按 <kbd>Save JSON</kbd> 把所有 pivots 下载或复制到 clipboard。
+</div>
+<div class="grid" id="parts-grid"></div>
+
+<div class="actions">
+  <button id="save">💾 导出 pivots.json（复制到剪贴板）</button>
+  <button id="toggle-sizes">显示尺寸</button>
+</div>
+<textarea id="json-output" placeholder="(output will appear here)"></textarea>
+
+<script>
+const PARTS = [
+  { name: 'head',      joints: ['top'] },   // only bottom-attach (neck)
+  { name: 'torso',     joints: ['top', 'bottom', 'left_shoulder', 'right_shoulder'] },
+  { name: 'cape',      joints: ['top'] },
+  { name: 'upper_arm', joints: ['top', 'bottom'] },
+  { name: 'forearm',   joints: ['top', 'bottom'] },
+  { name: 'sword',     joints: ['top'] },
+  { name: 'thigh',     joints: ['top', 'bottom'] },
+  { name: 'shin',      joints: ['top', 'bottom'] },
+  { name: 'shield',    joints: ['top'] },
+];
+
+const DEFAULTS = {
+  head:      { top: [290, 380] },
+  torso:     { top: [145, 15], bottom: [145, 400], left_shoulder: [55, 70], right_shoulder: [247, 70] },
+  cape:      { top: [190, 15] },
+  upper_arm: { top: [72, 30], bottom: [72, 340] },
+  forearm:   { top: [125, 25], bottom: [125, 490] },
+  sword:     { top: [180, 90] },
+  thigh:     { top: [175, 20], bottom: [175, 410] },
+  shin:      { top: [82, 10], bottom: [82, 420] },
+  shield:    { top: [145, 250] },
+};
+
+// Which joint key is in "active editing mode" per part
+const activeJoint = {};
+PARTS.forEach(p => activeJoint[p.name] = p.joints[0]);
+
+const pivots = JSON.parse(JSON.stringify(DEFAULTS));
+
+const JOINT_COLORS = {
+  top:            [249, 211, 108],    // gold
+  bottom:         [100, 200, 250],    // cyan
+  left_shoulder:  [255, 100, 150],    // pink
+  right_shoulder: [100, 255, 150],    // green
+};
+
+function render() {
+  const grid = document.getElementById('parts-grid');
+  grid.innerHTML = '';
+  PARTS.forEach(partDef => {
+    const container = document.createElement('div');
+    container.className = 'part';
+    container.innerHTML = `
+      <div class="name">${partDef.name}</div>
+      <div class="mode-select">
+        ${partDef.joints.map(j => `<button data-part="${partDef.name}" data-joint="${j}" class="${j === activeJoint[partDef.name] ? 'active' : ''}">${j}</button>`).join('')}
+      </div>
+      <div class="canvas-wrap" data-part="${partDef.name}">
+        <canvas id="cv-${partDef.name}"></canvas>
+      </div>
+      <div class="joints" id="joints-${partDef.name}"></div>
+    `;
+    grid.appendChild(container);
+
+    // Wire mode-select buttons
+    container.querySelectorAll('.mode-select button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeJoint[btn.dataset.part] = btn.dataset.joint;
+        render();
+      });
+    });
+
+    // Load image + wire click-to-set-pivot
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.getElementById(`cv-${partDef.name}`);
+      const maxDim = 300;
+      const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      cv.width = img.width * scale;
+      cv.height = img.height * scale;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      // Draw each pivot as a colored dot
+      for (const [jointName, [px, py]] of Object.entries(pivots[partDef.name] || {})) {
+        const [r, g, b] = JOINT_COLORS[jointName] || [255, 255, 255];
+        const sx = px * scale;
+        const sy = py * scale;
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(sx, sy, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
+      }
+
+      cv.addEventListener('click', (e) => {
+        const rect = cv.getBoundingClientRect();
+        const sx = (e.clientX - rect.left) / rect.width * cv.width;
+        const sy = (e.clientY - rect.top) / rect.height * cv.height;
+        const px = Math.round(sx / scale);
+        const py = Math.round(sy / scale);
+        const joint = activeJoint[partDef.name];
+        pivots[partDef.name] = pivots[partDef.name] || {};
+        pivots[partDef.name][joint] = [px, py];
+        render();  // re-render to show new dot
+      });
+    };
+    img.src = `parts_e3/${partDef.name}.png`;
+
+    // Render current joint list
+    const jointsDiv = document.getElementById(`joints-${partDef.name}`);
+    const parts = [];
+    for (const [jn, pt] of Object.entries(pivots[partDef.name] || {})) {
+      const [r, g, b] = JOINT_COLORS[jn] || [255,255,255];
+      parts.push(`<span style="color: rgb(${r},${g},${b})">${jn}</span>=<b>(${pt[0]}, ${pt[1]})</b>`);
+    }
+    jointsDiv.innerHTML = parts.join(' · ');
+  });
+}
+
+document.getElementById('save').addEventListener('click', async () => {
+  const json = JSON.stringify(pivots, null, 2);
+  document.getElementById('json-output').value = json;
+  try {
+    await navigator.clipboard.writeText(json);
+    alert('已复制到剪贴板！同时显示在下方文本框。');
+  } catch (e) {
+    alert('无法访问剪贴板，请手动复制下方文本框。');
+  }
+});
+
+render();
+</script>
+</body>
+</html>
