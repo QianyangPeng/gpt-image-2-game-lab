@@ -951,6 +951,7 @@ function drawMarisa() {
     rig.render(ctx, rigAnim, localT, {
       x: state.x, y: pelvisScreenY, facing: state.facing, scale: SCALE,
       poseOverrides: overrides,
+      debug: KEYS['KeyG'] === true,   // hold G to show bone origins
     });
     return;
   }

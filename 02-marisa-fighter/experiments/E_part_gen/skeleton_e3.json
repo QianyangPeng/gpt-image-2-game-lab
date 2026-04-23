@@ -19,18 +19,18 @@
       "parent": "pelvis",
       "sprite": "torso",
       "pivot": [
-        117,
-        294
+        110,
+        278
       ],
       "offset": [
         0,
         0
       ],
       "sprite_size": [
-        222,
-        304
+        210,
+        288
       ],
-      "sprite_scale": 0.7360774818401937,
+      "sprite_scale": 0.6973365617433414,
       "z": 3
     },
     {
@@ -42,8 +42,8 @@
         157
       ],
       "offset": [
-        -1,
-        -283
+        0,
+        -268
       ],
       "sprite_size": [
         165,
@@ -57,18 +57,18 @@
       "parent": "torso",
       "sprite": "cape",
       "pivot": [
-        326,
-        13
+        277,
+        11
       ],
       "offset": [
-        -13,
-        -251
+        -12,
+        -236
       ],
       "sprite_size": [
-        386,
-        376
+        328,
+        320
       ],
-      "sprite_scale": 1.010752688172043,
+      "sprite_scale": 0.8602150537634409,
       "z": 0
     },
     {
@@ -76,18 +76,18 @@
       "parent": "torso",
       "sprite": "upper_arm",
       "pivot": [
-        36,
-        13
+        29,
+        10
       ],
       "offset": [
-        101,
-        -230
+        97,
+        -217
       ],
       "sprite_size": [
-        69,
-        176
+        56,
+        144
       ],
-      "sprite_scale": 0.4782608695652174,
+      "sprite_scale": 0.391304347826087,
       "z": 6
     },
     {
@@ -95,18 +95,18 @@
       "parent": "front_upper_arm",
       "sprite": "forearm",
       "pivot": [
-        47,
-        7
+        43,
+        6
       ],
       "offset": [
-        -5,
-        148
+        -4,
+        122
       ],
       "sprite_size": [
-        85,
-        176
+        78,
+        160
       ],
-      "sprite_scale": 0.34375,
+      "sprite_scale": 0.3125,
       "z": 6
     },
     {
@@ -114,18 +114,18 @@
       "parent": "front_forearm",
       "sprite": "sword",
       "pivot": [
-        164,
+        113,
         0
       ],
       "offset": [
-        -7,
-        158
+        -6,
+        144
       ],
       "sprite_size": [
-        292,
-        416
+        202,
+        288
       ],
-      "sprite_scale": 0.8125,
+      "sprite_scale": 0.5625,
       "z": 6
     },
     {
@@ -133,18 +133,18 @@
       "parent": "torso",
       "sprite": "upper_arm",
       "pivot": [
-        36,
-        13
+        29,
+        10
       ],
       "offset": [
-        -113,
-        -230
+        -106,
+        -217
       ],
       "sprite_size": [
-        69,
-        176
+        56,
+        144
       ],
-      "sprite_scale": 0.4782608695652174,
+      "sprite_scale": 0.391304347826087,
       "z": 1
     },
     {
@@ -152,18 +152,18 @@
       "parent": "back_upper_arm",
       "sprite": "forearm",
       "pivot": [
-        47,
-        7
+        43,
+        6
       ],
       "offset": [
-        -5,
-        148
+        -4,
+        122
       ],
       "sprite_size": [
-        85,
-        176
+        78,
+        160
       ],
-      "sprite_scale": 0.34375,
+      "sprite_scale": 0.3125,
       "z": 1
     },
     {
@@ -171,18 +171,18 @@
       "parent": "back_forearm",
       "sprite": "shield",
       "pivot": [
-        61,
-        105
+        52,
+        90
       ],
       "offset": [
-        -7,
-        158
+        -6,
+        144
       ],
       "sprite_size": [
-        185,
-        224
+        158,
+        192
       ],
-      "sprite_scale": 0.43750000000000006,
+      "sprite_scale": 0.375,
       "z": 1
     },
     {
@@ -194,7 +194,7 @@
         8
       ],
       "offset": [
-        28,
+        48,
         0
       ],
       "sprite_size": [
@@ -232,7 +232,7 @@
         8
       ],
       "offset": [
-        -28,
+        -48,
         0
       ],
       "sprite_size": [
@@ -265,13 +265,13 @@
   "parts_dir": "experiments/E_part_gen/parts_e3",
   "scales": {
     "head": 0.41450777202072536,
-    "torso": 0.7360774818401937,
-    "cape": 1.010752688172043,
-    "upper_arm": 0.4782608695652174,
-    "forearm": 0.34375,
-    "sword": 0.8125,
+    "torso": 0.6973365617433414,
+    "cape": 0.8602150537634409,
+    "upper_arm": 0.391304347826087,
+    "forearm": 0.3125,
+    "sword": 0.5625,
     "thigh": 0.4251207729468599,
     "shin": 0.41217798594847777,
-    "shield": 0.43750000000000006
+    "shield": 0.375
   }
 }

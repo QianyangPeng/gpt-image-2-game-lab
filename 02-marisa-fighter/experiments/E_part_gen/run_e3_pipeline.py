@@ -153,14 +153,14 @@ print('\nSaved joints_e3.json')
 TARGET_H = 800
 TARGET = {
     'head':      TARGET_H * 0.20,
-    'torso':     TARGET_H * 0.38,
-    'cape':      TARGET_H * 0.47,
-    'upper_arm': TARGET_H * 0.22,
-    'forearm':   TARGET_H * 0.22,
-    'sword':     TARGET_H * 0.52,
+    'torso':     TARGET_H * 0.36,
+    'cape':      TARGET_H * 0.40,   # shorter cape, doesn't overpower legs
+    'upper_arm': TARGET_H * 0.18,
+    'forearm':   TARGET_H * 0.20,
+    'sword':     TARGET_H * 0.36,   # was 0.52 — was way too long
     'thigh':     TARGET_H * 0.22,
     'shin':      TARGET_H * 0.22,
-    'shield':    TARGET_H * 0.28,
+    'shield':    TARGET_H * 0.24,
 }
 sprite_scales = {}
 for name, joint in joints.items():
@@ -218,7 +218,7 @@ add_bone('back_forearm', 'back_upper_arm', 'forearm', 'top',
 add_bone('shield', 'back_forearm', 'shield', 'top',
          offset_parent_joint('forearm', 'bottom', 'top'), 1)
 
-HIP_HALF = int(TARGET_H * 0.035)
+HIP_HALF = int(TARGET_H * 0.06)   # wider stance so legs visibly stand apart
 add_bone('front_thigh', 'pelvis', 'thigh', 'top', [HIP_HALF, 0], 5)
 add_bone('front_shin', 'front_thigh', 'shin', 'top',
          offset_parent_joint('thigh', 'bottom', 'top'), 5)
